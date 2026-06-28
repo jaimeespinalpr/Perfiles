@@ -304,6 +304,18 @@
     setVal("aDefense2", defense[1]);
     setVal("aDefense3", defense[2]);
 
+    setVal("aCampEnjoyed", p.campEnjoyed);
+    setVal("aCampOverallRating", p.campOverallRating);
+    setVal("aCampImproved", p.campImproved);
+    setVal("aCampCoachesHelpful", p.campCoachesHelpful);
+    setVal("aCampOvernightGood", p.campOvernightGood);
+    setVal("aCampFoodSleepRating", p.campFoodSleepRating);
+    setVal("aCampFavoritePart", p.campFavoritePart);
+    setVal("aCampChangeNote", p.campChangeNote);
+    setVal("aCampWouldReturn", p.campWouldReturn);
+    setVal("aCampWouldRecommend", p.campWouldRecommend);
+    setVal("aCampMotivation", p.campMotivation);
+
     setPhotoPreview(p.photo || "");
     document.getElementById("sessionLabel").textContent =
       (p.name || p.email || "") + " - " + normalizeAuthRole(p.role);
@@ -377,7 +389,18 @@
       mentalReminders: [val("aMentalReminder1"), val("aMentalReminder2"), val("aMentalReminder3")].map(function (s) { return s.trim(); }).filter(Boolean),
       safetyWarnings: [val("aSafetyWarning1"), val("aSafetyWarning2")].map(function (s) { return s.trim(); }).filter(Boolean),
       physicalLimitations: [val("aPhysicalLimitation1"), val("aPhysicalLimitation2")].map(function (s) { return s.trim(); }).filter(Boolean),
-      competitionCue: val("aCompetitionCue").trim()
+      competitionCue: val("aCompetitionCue").trim(),
+      campEnjoyed: val("aCampEnjoyed"),
+      campOverallRating: val("aCampOverallRating"),
+      campImproved: val("aCampImproved"),
+      campCoachesHelpful: val("aCampCoachesHelpful"),
+      campOvernightGood: val("aCampOvernightGood"),
+      campFoodSleepRating: val("aCampFoodSleepRating"),
+      campFavoritePart: val("aCampFavoritePart").trim(),
+      campChangeNote: val("aCampChangeNote").trim(),
+      campWouldReturn: val("aCampWouldReturn"),
+      campWouldRecommend: val("aCampWouldRecommend"),
+      campMotivation: val("aCampMotivation")
     });
   }
 
@@ -466,6 +489,16 @@
   var rosterAthletes = [];
   var expandedRosterDocId = null;
 
+  function ratingChoices() {
+    var choices = [];
+    for (var i = 1; i <= 10; i++) choices.push({ value: String(i), label: String(i) });
+    return choices;
+  }
+
+  function yesNoChoices() {
+    return [{ value: "yes", label: "Yes" }, { value: "no", label: "No" }];
+  }
+
   // Single source of truth for "the questionnaire": every field here counts
   // as one question toward an athlete's progress total. Keep this in sync
   // with the fields editable in the athlete profile form above.
@@ -537,10 +570,22 @@
     { group: "coaching", label: "Advertencias de seguridad", keys: ["safetyWarnings"], isList: true },
     { group: "coaching", label: "Limitaciones fisicas", keys: ["physicalLimitations"], isList: true },
     { group: "coaching", label: "Ofensiva top 3", keys: ["offenseTop3"], isList: true },
-    { group: "coaching", label: "Defensa top 3", keys: ["defenseTop3"], isList: true }
+    { group: "coaching", label: "Defensa top 3", keys: ["defenseTop3"], isList: true },
+
+    { group: "camp", label: "Enjoyed the camp?", keys: ["campEnjoyed"], choices: yesNoChoices() },
+    { group: "camp", label: "Overall camp rating", keys: ["campOverallRating"], choices: ratingChoices() },
+    { group: "camp", label: "Improved as a wrestler?", keys: ["campImproved"], choices: yesNoChoices() },
+    { group: "camp", label: "Coaches helpfulness rating", keys: ["campCoachesHelpful"], choices: ratingChoices() },
+    { group: "camp", label: "Overnight stay was good?", keys: ["campOvernightGood"], choices: yesNoChoices() },
+    { group: "camp", label: "Food / sleeping setup rating", keys: ["campFoodSleepRating"], choices: ratingChoices() },
+    { group: "camp", label: "Favorite part of camp", keys: ["campFavoritePart"] },
+    { group: "camp", label: "What would you change?", keys: ["campChangeNote"] },
+    { group: "camp", label: "Would come back?", keys: ["campWouldReturn"], choices: yesNoChoices() },
+    { group: "camp", label: "Would recommend to a teammate?", keys: ["campWouldRecommend"], choices: yesNoChoices() },
+    { group: "camp", label: "Motivation after camp", keys: ["campMotivation"], choices: ratingChoices() }
   ];
 
-  var GROUP_TITLES = { training: "Entrenamiento", competition: "Competencia", coaching: "Coaching Quick" };
+  var GROUP_TITLES = { training: "Entrenamiento", competition: "Competencia", coaching: "Coaching Quick", camp: "Stellar Camp" };
 
   function questionValue(p, def) {
     if (!p) return def.isList ? [] : "";
@@ -764,7 +809,7 @@
     toggleBtn.textContent = startExpanded ? "Ver menos" : "Ver mas";
     header.appendChild(toggleBtn);
 
-    ["training", "competition", "coaching"].forEach(function (groupKey) {
+    ["training", "competition", "coaching", "camp"].forEach(function (groupKey) {
       var group = buildRosterGroup(groupKey, p);
       if (group) detail.appendChild(group);
     });

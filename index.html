@@ -175,6 +175,7 @@
           <button type="button" class="profile-subtab active" data-tab="training">Training</button>
           <button type="button" class="profile-subtab" data-tab="competition">Competition</button>
           <button type="button" class="profile-subtab" data-tab="coaching">Coaching Quick</button>
+          <button type="button" class="profile-subtab" data-tab="camp">Stellar Camp</button>
         </div>
 
         <!-- TRAINING -->
@@ -407,6 +408,117 @@
                 <label><span>Defensa 3</span><input id="aDefense3" type="text"></label>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- STELLAR CAMP -->
+        <div class="profile-subpanel hidden" data-panel="camp">
+          <div class="form-section">
+            <h3>Stellar Camp</h3>
+            <p class="small muted">Quick feedback after the 3-day wrestling camp. Takes about 2 minutes.</p>
+            <div class="grid">
+              <label><span>Did you enjoy the 3-day wrestling camp?</span>
+                <select id="aCampEnjoyed">
+                  <option value="">Select...</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </label>
+              <label><span>Did you feel like you improved as a wrestler during the camp?</span>
+                <select id="aCampImproved">
+                  <option value="">Select...</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </label>
+              <label><span>From 1 to 10, how would you rate the camp overall? (1 = Not good, 10 = Perfect)</span>
+                <select id="aCampOverallRating">
+                  <option value="">Select...</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </label>
+              <label><span>From 1 to 10, how helpful were the coaches? (1 = Not helpful, 10 = Very helpful)</span>
+                <select id="aCampCoachesHelpful">
+                  <option value="">Select...</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </label>
+              <label><span>Was staying overnight at the camp a good experience for you?</span>
+                <select id="aCampOvernightGood">
+                  <option value="">Select...</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </label>
+              <label><span>From 1 to 10, how was the food / sleeping setup? (1 = Not good, 10 = Perfect)</span>
+                <select id="aCampFoodSleepRating">
+                  <option value="">Select...</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </label>
+              <label><span>Would you come back to this camp again?</span>
+                <select id="aCampWouldReturn">
+                  <option value="">Select...</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </label>
+              <label><span>Would you recommend this camp to another wrestler?</span>
+                <select id="aCampWouldRecommend">
+                  <option value="">Select...</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </label>
+              <label class="span-2"><span>What was your favorite part of the camp?</span><textarea id="aCampFavoritePart" rows="3"></textarea></label>
+              <label class="span-2"><span>What is one thing you did not like, or would change for next time?</span><textarea id="aCampChangeNote" rows="3"></textarea></label>
+            </div>
+          </div>
+
+          <div class="mini-card">
+            <h4>One last thing</h4>
+            <label><span>From 1 to 10, how motivated do you feel after this camp? (1 = Not motivated, 10 = Very motivated)</span>
+              <select id="aCampMotivation">
+                <option value="">Select...</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+              </select>
+            </label>
           </div>
         </div>
 
