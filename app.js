@@ -585,7 +585,7 @@
     { group: "camp", label: "Motivation after camp", keys: ["campMotivation"], choices: ratingChoices() }
   ];
 
-  var GROUP_TITLES = { training: "Entrenamiento", competition: "Competencia", coaching: "Coaching Quick", camp: "Stellar Camp" };
+  var GROUP_TITLES = { training: "Entrenamiento", competition: "Competencia", coaching: "Coaching Quick", camp: "Steller Camp" };
 
   function questionValue(p, def) {
     if (!p) return def.isList ? [] : "";
