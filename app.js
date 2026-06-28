@@ -200,6 +200,7 @@
   });
 
   var currentUid = null;
+  var currentProfileDocId = null;
   var currentPhotoUrl = "";
   var currentProfile = null;
 
@@ -389,7 +390,7 @@
     payload.user_id = currentUid;
     payload.view = getDefaultViewForRole(payload.role);
     payload.updatedAt = new Date().toISOString();
-    db.collection(USERS_COLLECTION).doc(currentUid).set(stripUndefinedDeep(payload), { merge: true })
+    db.collection(USERS_COLLECTION).doc(currentProfileDocId || currentUid).set(stripUndefinedDeep(payload), { merge: true })
       .then(function () {
         statusEl.textContent = "Perfil guardado.";
         toast("Perfil guardado.", "ok");
@@ -463,13 +464,84 @@
   var rosterCount = document.getElementById("rosterCount");
   var rosterSearchInput = document.getElementById("rosterSearch");
   var rosterAthletes = [];
+  var expandedRosterDocId = null;
+
+  // Single source of truth for "the questionnaire": every field here counts
+  // as one question toward an athlete's progress total. Keep this in sync
+  // with the fields editable in the athlete profile form above.
+  var QUESTION_DEFS = [
+    { group: "training", label: "Pais", keys: ["country"] },
+    { group: "training", label: "Ciudad/Estado", keys: ["city"] },
+    { group: "training", label: "Escuela", keys: ["schoolName"] },
+    { group: "training", label: "Club", keys: ["clubName"] },
+    { group: "training", label: "Grado escolar", keys: ["schoolGrade"] },
+    { group: "training", label: "Peso actual", keys: ["currentWeight", "weight"] },
+    { group: "training", label: "Rutinas de entrenamiento", keys: ["trainingRoutines"] },
+    { group: "training", label: "Volumen semanal", keys: ["trainingVolume"] },
+    { group: "training", label: "Tecnica mas trabajada", keys: ["trainingFocus"] },
+    { group: "training", label: "Movimiento(s) preferido(s)", keys: ["preferredMoves", "preferred_moves"] },
+    { group: "training", label: "Postura", keys: ["stance"] },
+    { group: "training", label: "Notas / metas", keys: ["questionnaireNotes", "notes"] },
+    { group: "training", label: "Etiquetas", keys: ["tags"], isList: true },
+
+    { group: "competition", label: "Estilo principal", keys: ["style"] },
+    { group: "competition", label: "Categoria de peso", keys: ["weightClass", "weight_class"] },
+    { group: "competition", label: "Anos de experiencia", keys: ["years", "experienceYears", "experience_years"] },
+    { group: "competition", label: "Nivel", keys: ["level"] },
+    { group: "competition", label: "Posicion preferida", keys: ["position"] },
+    { group: "competition", label: "Arquetipo", keys: ["archetype"] },
+    { group: "competition", label: "Tipo de cuerpo", keys: ["bodyType"] },
+    { group: "competition", label: "Estrategia", keys: ["strategy"] },
+    { group: "competition", label: "Resultados recientes", keys: ["resultsHistory"] },
+    { group: "competition", label: "Lesiones o limitaciones", keys: ["injuryNotes"] },
+
+    { group: "coaching", label: "Posicion favorita", keys: ["favoritePosition"] },
+    { group: "coaching", label: "Tendencia psicologica", keys: ["psychTendency"] },
+    { group: "coaching", label: "Error comun bajo presion", keys: ["pressureError"] },
+    { group: "coaching", label: "Senal clave del coach", keys: ["coachSignal"] },
+    { group: "coaching", label: "Palabras clave", keys: ["cueWords"], isList: true },
+    { group: "coaching", label: "Setups", keys: ["setupsTop3"], isList: true },
+    { group: "coaching", label: "Cues del coach", keys: ["cornerCoachCues"], isList: true },
+    { group: "coaching", label: "Recordatorios mentales", keys: ["mentalReminders"], isList: true },
+    { group: "coaching", label: "Advertencias de seguridad", keys: ["safetyWarnings"], isList: true },
+    { group: "coaching", label: "Limitaciones fisicas", keys: ["physicalLimitations"], isList: true },
+    { group: "coaching", label: "Ofensiva top 3", keys: ["offenseTop3"], isList: true },
+    { group: "coaching", label: "Defensa top 3", keys: ["defenseTop3"], isList: true }
+  ];
+
+  var GROUP_TITLES = { training: "Entrenamiento", competition: "Competencia", coaching: "Coaching Quick" };
+
+  function questionValue(p, def) {
+    for (var i = 0; i < def.keys.length; i++) {
+      var v = p[def.keys[i]];
+      if (Array.isArray(v)) {
+        var filtered = v.filter(Boolean);
+        if (filtered.length) return filtered;
+      } else if (v !== undefined && v !== null && v !== "") {
+        return v;
+      }
+    }
+    return def.isList ? [] : "";
+  }
+
+  function isQuestionAnswered(p, def) {
+    var v = questionValue(p, def);
+    return Array.isArray(v) ? v.length > 0 : v !== "";
+  }
+
+  function questionDisplayValue(p, def) {
+    var v = questionValue(p, def);
+    return Array.isArray(v) ? v.join(", ") : v;
+  }
+
+  function computeProgress(p) {
+    var total = QUESTION_DEFS.length;
+    var answered = QUESTION_DEFS.filter(function (def) { return isQuestionAnswered(p, def); }).length;
+    return { total: total, answered: answered, percent: total ? Math.round((answered / total) * 100) : 0 };
+  }
 
   function fieldRow(label, value) {
     if (value === undefined || value === null || value === "") return null;
-    if (Array.isArray(value)) {
-      value = value.filter(Boolean).join(", ");
-      if (!value) return null;
-    }
     var row = document.createElement("div");
     row.className = "roster-field";
     var labelEl = document.createElement("span");
@@ -483,26 +555,112 @@
     return row;
   }
 
-  function appendFields(container, pairs) {
-    var any = false;
-    pairs.forEach(function (pair) {
-      var row = fieldRow(pair[0], pair[1]);
-      if (row) {
-        container.appendChild(row);
-        any = true;
-      }
-    });
-    return any;
-  }
-
-  function buildRosterGroup(title, pairs) {
+  function buildRosterGroup(groupKey, p) {
+    var defs = QUESTION_DEFS.filter(function (def) { return def.group === groupKey && isQuestionAnswered(p, def); });
+    if (!defs.length) return null;
     var group = document.createElement("div");
     group.className = "roster-group";
     var heading = document.createElement("h4");
-    heading.textContent = title;
+    heading.textContent = GROUP_TITLES[groupKey];
     group.appendChild(heading);
-    var hasContent = appendFields(group, pairs);
-    return hasContent ? group : null;
+    defs.forEach(function (def) {
+      var row = fieldRow(def.label, questionDisplayValue(p, def));
+      if (row) group.appendChild(row);
+    });
+    return group;
+  }
+
+  function buildProgressBar(progress) {
+    var wrap = document.createElement("div");
+    wrap.className = "roster-progress";
+    var label = document.createElement("span");
+    label.className = "small muted roster-progress-label";
+    label.textContent = "Preguntas: " + progress.answered + "/" + progress.total + " (" + progress.percent + "%)";
+    var bar = document.createElement("div");
+    bar.className = "roster-progress-bar";
+    var fill = document.createElement("div");
+    fill.className = "roster-progress-fill";
+    fill.style.width = progress.percent + "%";
+    bar.appendChild(fill);
+    wrap.appendChild(label);
+    wrap.appendChild(bar);
+    return wrap;
+  }
+
+  function buildPendingGroup(p) {
+    var pending = QUESTION_DEFS.filter(function (def) { return !isQuestionAnswered(p, def); });
+    if (!pending.length) return null;
+
+    var group = document.createElement("div");
+    group.className = "roster-group roster-pending-group";
+    var heading = document.createElement("h4");
+    heading.textContent = "Preguntas pendientes (" + pending.length + ")";
+    group.appendChild(heading);
+
+    var entries = pending.map(function (def) {
+      var row = document.createElement("div");
+      row.className = "roster-pending-row";
+      var label = document.createElement("span");
+      label.className = "small muted roster-pending-label";
+      label.textContent = def.label;
+      var input = document.createElement("input");
+      input.type = "text";
+      input.className = "roster-pending-input";
+      input.placeholder = def.isList ? "Separar con comas" : "Escribe la respuesta...";
+      row.appendChild(label);
+      row.appendChild(input);
+      group.appendChild(row);
+      return { def: def, input: input };
+    });
+
+    var statusEl = document.createElement("span");
+    statusEl.className = "small muted roster-pending-status";
+
+    var saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "primary";
+    saveBtn.textContent = "Guardar respuestas";
+    saveBtn.addEventListener("click", function () {
+      if (!p._docId) {
+        statusEl.textContent = "No se pudo identificar el perfil.";
+        return;
+      }
+      var updates = {};
+      var any = false;
+      entries.forEach(function (entry) {
+        var raw = entry.input.value.trim();
+        if (!raw) return;
+        any = true;
+        var value = entry.def.isList
+          ? raw.split(",").map(function (s) { return s.trim(); }).filter(Boolean)
+          : raw;
+        entry.def.keys.forEach(function (key) { updates[key] = value; });
+      });
+      if (!any) {
+        statusEl.textContent = "Escribe al menos una respuesta.";
+        return;
+      }
+      updates.updatedAt = new Date().toISOString();
+      statusEl.textContent = "Guardando...";
+      expandedRosterDocId = p._docId;
+      db.collection(USERS_COLLECTION).doc(p._docId).update(updates)
+        .then(function () {
+          toast("Respuestas guardadas para " + (p.name || p.email || "el atleta"), "ok");
+          loadRoster();
+        })
+        .catch(function (err) {
+          statusEl.textContent = "";
+          toast("No se pudo guardar: " + (err.message || err.code), "error");
+        });
+    });
+
+    var actionsRow = document.createElement("div");
+    actionsRow.className = "row";
+    actionsRow.appendChild(saveBtn);
+    actionsRow.appendChild(statusEl);
+    group.appendChild(actionsRow);
+
+    return group;
   }
 
   function buildRosterItem(p) {
@@ -544,65 +702,31 @@
     var toggleBtn = document.createElement("button");
     toggleBtn.type = "button";
     toggleBtn.className = "ghost";
-    toggleBtn.textContent = "Ver mas";
-    header.appendChild(toggleBtn);
 
+    var progress = computeProgress(p);
     item.appendChild(header);
+    item.appendChild(buildProgressBar(progress));
 
     var detail = document.createElement("div");
-    detail.className = "roster-detail hidden";
+    detail.className = "roster-detail";
+    var startExpanded = expandedRosterDocId && p._docId === expandedRosterDocId;
+    detail.classList.toggle("hidden", !startExpanded);
+    toggleBtn.textContent = startExpanded ? "Ver menos" : "Ver mas";
+    header.appendChild(toggleBtn);
 
-    var trainingGroup = buildRosterGroup("Entrenamiento", [
-      ["Pais", p.country],
-      ["Ciudad/Estado", p.city],
-      ["Escuela", p.schoolName],
-      ["Club", p.clubName],
-      ["Grado escolar", p.schoolGrade],
-      ["Peso actual", p.currentWeight || p.weight],
-      ["Rutinas de entrenamiento", p.trainingRoutines],
-      ["Volumen semanal", p.trainingVolume],
-      ["Tecnica mas trabajada", p.trainingFocus],
-      ["Movimiento(s) preferido(s)", p.preferredMoves || p.preferred_moves],
-      ["Postura", p.stance],
-      ["Notas / metas", p.questionnaireNotes || p.notes],
-      ["Etiquetas", p.tags]
-    ]);
-    if (trainingGroup) detail.appendChild(trainingGroup);
+    ["training", "competition", "coaching"].forEach(function (groupKey) {
+      var group = buildRosterGroup(groupKey, p);
+      if (group) detail.appendChild(group);
+    });
 
-    var competitionGroup = buildRosterGroup("Competencia", [
-      ["Estilo principal", p.style],
-      ["Categoria de peso", p.weightClass || p.weight_class],
-      ["Anos de experiencia", p.years || p.experienceYears || p.experience_years],
-      ["Nivel", p.level],
-      ["Posicion preferida", p.position],
-      ["Arquetipo", p.archetype],
-      ["Tipo de cuerpo", p.bodyType],
-      ["Estrategia", p.strategy],
-      ["Resultados recientes", p.resultsHistory],
-      ["Lesiones o limitaciones", p.injuryNotes]
-    ]);
-    if (competitionGroup) detail.appendChild(competitionGroup);
-
-    var coachingGroup = buildRosterGroup("Coaching Quick", [
-      ["Posicion favorita", p.favoritePosition],
-      ["Tendencia psicologica", p.psychTendency],
-      ["Error comun bajo presion", p.pressureError],
-      ["Senal clave del coach", p.coachSignal],
-      ["Palabras clave", p.cueWords],
-      ["Setups", p.setupsTop3],
-      ["Cues del coach", p.cornerCoachCues],
-      ["Recordatorios mentales", p.mentalReminders],
-      ["Advertencias de seguridad", p.safetyWarnings],
-      ["Limitaciones fisicas", p.physicalLimitations],
-      ["Ofensiva top 3", p.offenseTop3],
-      ["Defensa top 3", p.defenseTop3]
-    ]);
-    if (coachingGroup) detail.appendChild(coachingGroup);
+    var pendingGroup = buildPendingGroup(p);
+    if (pendingGroup) detail.appendChild(pendingGroup);
 
     item.appendChild(detail);
 
     toggleBtn.addEventListener("click", function () {
       var nowHidden = detail.classList.toggle("hidden");
+      expandedRosterDocId = nowHidden ? null : p._docId;
       toggleBtn.textContent = nowHidden ? "Ver mas" : "Ver menos";
     });
 
@@ -629,7 +753,9 @@
   function loadRoster() {
     db.collection(USERS_COLLECTION).where("role", "==", "athlete").get()
       .then(function (snapshot) {
-        rosterAthletes = snapshot.docs.map(function (doc) { return doc.data(); });
+        rosterAthletes = snapshot.docs.map(function (doc) {
+          return Object.assign({ _docId: doc.id }, doc.data());
+        });
         renderRoster(val("rosterSearch"));
       })
       .catch(function (err) {
@@ -645,9 +771,33 @@
 
   // ---------- SESSION ----------
 
+  function defaultProfileFor(user) {
+    return {
+      user_id: user.uid,
+      email: user.email || "",
+      name: user.displayName || "",
+      role: "athlete",
+      view: "athlete"
+    };
+  }
+
+  function applyLoadedProfile(profile, docId) {
+    currentProfile = profile;
+    currentProfileDocId = docId;
+    populateAthleteProfileForm(currentProfile);
+    var rawRole = String(currentProfile.role || "").trim().toLowerCase();
+    if (rawRole === "coach" || rawRole === "admin") {
+      rosterCard.classList.remove("hidden");
+      loadRoster();
+    } else {
+      rosterCard.classList.add("hidden");
+    }
+  }
+
   auth.onAuthStateChanged(function (user) {
     if (!user) {
       currentUid = null;
+      currentProfileDocId = null;
       currentProfile = null;
       authScreen.classList.remove("hidden");
       profileScreen.classList.add("hidden");
@@ -660,21 +810,26 @@
     profileScreen.classList.remove("hidden");
     db.collection(USERS_COLLECTION).doc(user.uid).get()
       .then(function (doc) {
-        currentProfile = doc.exists ? doc.data() : {
-          user_id: user.uid,
-          email: user.email || "",
-          name: user.displayName || "",
-          role: "athlete",
-          view: "athlete"
-        };
-        populateAthleteProfileForm(currentProfile);
-        var rawRole = String(currentProfile.role || "").trim().toLowerCase();
-        if (rawRole === "coach" || rawRole === "admin") {
-          rosterCard.classList.remove("hidden");
-          loadRoster();
-        } else {
-          rosterCard.classList.add("hidden");
+        if (doc.exists) {
+          applyLoadedProfile(doc.data(), user.uid);
+          return;
         }
+        if (!user.email) {
+          applyLoadedProfile(defaultProfileFor(user), user.uid);
+          return null;
+        }
+        // Some legacy accounts (e.g. created directly in Firestore before
+        // this app's signup flow existed) have a doc ID that doesn't match
+        // the Firebase Auth UID. Fall back to an email lookup so those
+        // profiles (notably coach accounts) still resolve correctly.
+        return db.collection(USERS_COLLECTION).where("email", "==", user.email).limit(1).get()
+          .then(function (snapshot) {
+            if (!snapshot.empty) {
+              applyLoadedProfile(snapshot.docs[0].data(), snapshot.docs[0].id);
+            } else {
+              applyLoadedProfile(defaultProfileFor(user), user.uid);
+            }
+          });
       })
       .catch(function (err) {
         toast("No se pudo cargar el perfil: " + (err.message || err.code), "error");
