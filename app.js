@@ -480,18 +480,49 @@
     { group: "training", label: "Volumen semanal", keys: ["trainingVolume"] },
     { group: "training", label: "Tecnica mas trabajada", keys: ["trainingFocus"] },
     { group: "training", label: "Movimiento(s) preferido(s)", keys: ["preferredMoves", "preferred_moves"] },
-    { group: "training", label: "Postura", keys: ["stance"] },
+    { group: "training", label: "Postura", keys: ["stance"], choices: [
+      { value: "left", label: "Izquierda" },
+      { value: "right", label: "Derecha" },
+      { value: "switch", label: "Switch" }
+    ] },
     { group: "training", label: "Notas / metas", keys: ["questionnaireNotes", "notes"] },
     { group: "training", label: "Etiquetas", keys: ["tags"], isList: true },
 
-    { group: "competition", label: "Estilo principal", keys: ["style"] },
+    { group: "competition", label: "Estilo principal", keys: ["style"], choices: [
+      { value: "freestyle", label: "Freestyle" },
+      { value: "greco-roman", label: "Greco-Roman" },
+      { value: "folkstyle", label: "Folkstyle" }
+    ] },
     { group: "competition", label: "Categoria de peso", keys: ["weightClass", "weight_class"] },
     { group: "competition", label: "Anos de experiencia", keys: ["years", "experienceYears", "experience_years"] },
-    { group: "competition", label: "Nivel", keys: ["level"] },
-    { group: "competition", label: "Posicion preferida", keys: ["position"] },
-    { group: "competition", label: "Arquetipo", keys: ["archetype"] },
-    { group: "competition", label: "Tipo de cuerpo", keys: ["bodyType"] },
-    { group: "competition", label: "Estrategia", keys: ["strategy"] },
+    { group: "competition", label: "Nivel", keys: ["level"], choices: [
+      { value: "beginner", label: "Principiante" },
+      { value: "intermediate", label: "Intermedio" },
+      { value: "advanced", label: "Avanzado" }
+    ] },
+    { group: "competition", label: "Posicion preferida", keys: ["position"], choices: [
+      { value: "neutral", label: "Neutral" },
+      { value: "top", label: "Top" },
+      { value: "bottom", label: "Bottom" }
+    ] },
+    { group: "competition", label: "Arquetipo", keys: ["archetype"], choices: [
+      { value: "technician", label: "Technician" },
+      { value: "scrambler", label: "Scrambler" },
+      { value: "pummler", label: "Pummeler" },
+      { value: "counter-wrestler", label: "Counter-wrestler" },
+      { value: "chain-wrestler", label: "Chain-wrestler" }
+    ] },
+    { group: "competition", label: "Tipo de cuerpo", keys: ["bodyType"], choices: [
+      { value: "compact", label: "Compacto/Potente" },
+      { value: "long", label: "Largo/Delgado" },
+      { value: "balanced", label: "Balanceado/Atletico" }
+    ] },
+    { group: "competition", label: "Estrategia", keys: ["strategy"], choices: [
+      { value: "balanced", label: "Balanceada" },
+      { value: "offensive", label: "Ofensiva" },
+      { value: "defensive", label: "Defensiva" },
+      { value: "counter", label: "Contraataque" }
+    ] },
     { group: "competition", label: "Resultados recientes", keys: ["resultsHistory"] },
     { group: "competition", label: "Lesiones o limitaciones", keys: ["injuryNotes"] },
 
@@ -512,6 +543,7 @@
   var GROUP_TITLES = { training: "Entrenamiento", competition: "Competencia", coaching: "Coaching Quick" };
 
   function questionValue(p, def) {
+    if (!p) return def.isList ? [] : "";
     for (var i = 0; i < def.keys.length; i++) {
       var v = p[def.keys[i]];
       if (Array.isArray(v)) {
@@ -603,10 +635,26 @@
       var label = document.createElement("span");
       label.className = "small muted roster-pending-label";
       label.textContent = def.label;
-      var input = document.createElement("input");
-      input.type = "text";
-      input.className = "roster-pending-input";
-      input.placeholder = def.isList ? "Separar con comas" : "Escribe la respuesta...";
+      var input;
+      if (def.choices) {
+        input = document.createElement("select");
+        input.className = "roster-pending-input";
+        var opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Selecciona...";
+        input.appendChild(opt);
+        def.choices.forEach(function (choice) {
+          var o = document.createElement("option");
+          o.value = choice.value;
+          o.textContent = choice.label;
+          input.appendChild(o);
+        });
+      } else {
+        input = document.createElement("input");
+        input.type = "text";
+        input.className = "roster-pending-input";
+        input.placeholder = def.isList ? "Separar con comas" : "Escribe la respuesta...";
+      }
       row.appendChild(label);
       row.appendChild(input);
       group.appendChild(row);
@@ -641,6 +689,7 @@
         return;
       }
       updates.updatedAt = new Date().toISOString();
+      saveBtn.disabled = true;
       statusEl.textContent = "Guardando...";
       expandedRosterDocId = p._docId;
       db.collection(USERS_COLLECTION).doc(p._docId).update(updates)
@@ -649,6 +698,7 @@
           loadRoster();
         })
         .catch(function (err) {
+          saveBtn.disabled = false;
           statusEl.textContent = "";
           toast("No se pudo guardar: " + (err.message || err.code), "error");
         });
