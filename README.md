@@ -44,3 +44,42 @@ porque la API de GitHub usada en esta sesion no puede activar la opcion de Pages
 
 No requiere build ni dependencias: es HTML/CSS/JS plano. Basta abrir `index.html` en un
 navegador o servirlo con cualquier servidor estatico.
+
+## Notificacion por correo al Entrenador
+
+La carpeta `functions/` contiene una Cloud Function (`notifyCoachOnProfileChange`) que se
+dispara automaticamente cada vez que se crea o modifica un documento en la coleccion `users`
+de Firestore, y le envia un correo al Entrenador (`jaimeespinalpr@gmail.com`) con los datos
+nuevos o los campos que cambiaron. Usa Gmail/SMTP a traves de `nodemailer`.
+
+Esto requiere el plan **Blaze** de Firebase (ya activo en este proyecto) porque las Cloud
+Functions con salida de red no estan disponibles en el plan gratuito Spark.
+
+### Pasos para desplegarla (una sola vez, desde tu computadora)
+
+1. Instala el Firebase CLI si no lo tienes: `npm install -g firebase-tools`.
+2. Genera una "contrasena de aplicacion" en la cuenta de Gmail que enviara los correos
+   (`jaimeespinalpr@gmail.com`): activa la verificacion en dos pasos en
+   https://myaccount.google.com/security y luego crea la contrasena en
+   https://myaccount.google.com/apppasswords. Copia esa contrasena (no es tu contrasena normal
+   de Gmail).
+3. Desde la raiz del repo:
+   ```
+   firebase login
+   firebase use gary-test-c557f
+   firebase functions:secrets:set GMAIL_APP_PASSWORD
+   ```
+   Cuando te pida el valor, pega la contrasena de aplicacion del paso 2 (nunca se comparte por
+   chat ni se guarda en el codigo).
+4. Instala las dependencias y despliega:
+   ```
+   cd functions
+   npm install
+   cd ..
+   firebase deploy --only functions
+   ```
+5. Listo. A partir de ahi, cualquier alta o cambio en un perfil (desde esta app o desde
+   wrest8858, ya que comparten la misma coleccion `users`) le manda un correo al Entrenador.
+
+Si en el futuro cambia el correo del Entrenador o la cuenta remitente, edita las constantes
+`COACH_EMAIL` y `SENDER_EMAIL` en `functions/index.js` y vuelve a desplegar.
