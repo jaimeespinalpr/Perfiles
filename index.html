@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfiles - Wrestling Performance Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2064%2064%27%3E%3Crect%20width=%2764%27%20height=%2764%27%20rx=%2714%27%20fill=%27%2309152b%27/%3E%3Cpath%20d=%27M12%2020h40l-8%2024H20z%27%20fill=%27%23f5c542%27/%3E%3Ctext%20x=%2732%27%20y=%2739%27%20font-family=%27Arial,sans-serif%27%20font-size=%2716%27%20font-weight=%27700%27%20text-anchor=%27middle%27%20fill=%27%2309152b%27%3EWPL%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- AUTH SCREEN -->
+  <main id="authScreen" class="screen">
+    <div class="auth-card">
+      <div class="brand">
+        <div class="brand-mark">WPL</div>
+        <div>
+          <h1>Perfiles</h1>
+          <p class="small muted">Crea tu cuenta y completa tu perfil de atleta.</p>
+        </div>
+      </div>
+
+      <div id="loginView">
+        <h2>Iniciar sesion</h2>
+        <form id="loginForm" class="form">
+          <label>
+            <span>Email</span>
+            <input id="loginEmail" type="email" required autocomplete="username">
+          </label>
+          <label>
+            <span>Contrasena</span>
+            <input id="loginPassword" type="password" required minlength="8" autocomplete="current-password">
+          </label>
+          <button type="submit" class="primary full">Entrar</button>
+        </form>
+        <p class="small muted">Protegido por Firebase Authentication.</p>
+        <button type="button" id="showRegisterBtn" class="ghost full">Crear una cuenta</button>
+      </div>
+
+      <div id="registerView" class="hidden">
+        <h2>Crear cuenta</h2>
+        <form id="registerForm" class="form">
+          <label>
+            <span>Nombre completo</span>
+            <input id="rName" type="text" required autocomplete="name" placeholder="ej. Jaime Espinal">
+          </label>
+          <label>
+            <span>Email</span>
+            <input id="rEmail" type="email" required autocomplete="email" placeholder="tu@email.com">
+          </label>
+          <label>
+            <span>Contrasena</span>
+            <input id="rPassword" type="password" required minlength="8" autocomplete="new-password">
+          </label>
+          <label>
+            <span>Confirmar contrasena</span>
+            <input id="rPasswordConfirm" type="password" required minlength="8" autocomplete="new-password">
+          </label>
+          <label>
+            <span>Rol</span>
+            <select id="rRole">
+              <option value="athlete">Atleta</option>
+              <option value="coach">Coach</option>
+              <option value="parent">Padre/Madre</option>
+            </select>
+          </label>
+          <label>
+            <span>Idioma</span>
+            <select id="rLang">
+              <option value="es">Espanol</option>
+              <option value="en">English</option>
+              <option value="uz">Uzbek</option>
+              <option value="ru">Russian</option>
+            </select>
+          </label>
+          <label class="role-extra role-extra-athlete role-extra-coach role-extra-parent">
+            <span>Foto de perfil (opcional, pega una URL)</span>
+            <input id="rPhoto" type="text" placeholder="https://...">
+          </label>
+          <label class="role-extra role-extra-athlete">
+            <span>Movimiento(s) preferido(s)</span>
+            <input id="rPreferredMoves" type="text" placeholder="ej. Single leg">
+          </label>
+          <label class="role-extra role-extra-athlete">
+            <span>Anos de experiencia</span>
+            <input id="rExperienceYears" type="number" min="0" max="40">
+          </label>
+          <label class="role-extra role-extra-athlete">
+            <span>Postura</span>
+            <select id="rStance">
+              <option value="">Selecciona</option>
+              <option value="left">Izquierda</option>
+              <option value="right">Derecha</option>
+              <option value="switch">Switch</option>
+            </select>
+          </label>
+          <label class="role-extra role-extra-athlete">
+            <span>Categoria de peso</span>
+            <input id="rWeightClass" type="text" placeholder="ej. 74 kg">
+          </label>
+          <label class="role-extra role-extra-parent hidden-role">
+            <span>Nombre del atleta (hijo/a)</span>
+            <input id="rParentAthleteName" type="text" placeholder="ej. Carlos Vega">
+          </label>
+          <p class="small muted role-extra role-extra-parent hidden-role">
+            El acceso de padre queda pendiente hasta que un coach verifique el vinculo con el atleta.
+          </p>
+          <label>
+            <span>Notas</span>
+            <textarea id="rNotes" rows="3" placeholder="Cuentanos tus metas"></textarea>
+          </label>
+          <button type="submit" class="primary full">Crear cuenta</button>
+          <p class="small muted">Podras editar toda esta informacion despues, en tu perfil.</p>
+        </form>
+        <button type="button" id="showLoginBtn" class="ghost full">Volver a iniciar sesion</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- PROFILE SCREEN -->
+  <main id="profileScreen" class="screen hidden">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">WPL</div>
+        <div>
+          <h1>Perfiles</h1>
+          <p class="small muted" id="sessionLabel"></p>
+        </div>
+      </div>
+      <button type="button" id="signOutBtn" class="ghost">Cerrar sesion</button>
+    </header>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Perfil de Atleta</h2>
+        <div class="chip">Crear y Editar</div>
+      </div>
+
+      <div class="mini-card profile-photo-callout">
+        <div class="profile-photo-callout-header">
+          <div>
+            <h3>Foto de perfil</h3>
+            <p class="small muted">Sube una foto desde tu dispositivo. Se usa en toda la app.</p>
+          </div>
+          <img id="aPhotoPreview" class="avatar avatar-lg" alt="Foto de perfil" hidden>
+          <div id="aPhotoPreviewFallback" class="avatar avatar-lg">AT</div>
+        </div>
+        <div class="profile-photo-uploader">
+          <input id="aPhotoFile" type="file" accept="image/*" class="visually-hidden">
+          <button type="button" id="aPhotoChooseBtn" class="primary">Subir foto</button>
+          <button type="button" id="aPhotoClearBtn" class="ghost">Quitar foto</button>
+        </div>
+        <p class="small muted" id="aPhotoStatus">Opcional. Imagen cuadrada recomendada.</p>
+      </div>
+
+      <form id="athleteProfileForm" class="form">
+        <div class="profile-subtabs" role="tablist">
+          <button type="button" class="profile-subtab active" data-tab="training">Training</button>
+          <button type="button" class="profile-subtab" data-tab="competition">Competition</button>
+          <button type="button" class="profile-subtab" data-tab="coaching">Coaching Quick</button>
+        </div>
+
+        <!-- TRAINING -->
+        <div class="profile-subpanel" data-panel="training">
+          <div class="grid">
+            <label><span>Nombre completo</span><input id="aName" type="text" required></label>
+            <label><span>Rol</span>
+              <select id="aRole">
+                <option value="athlete">Atleta</option>
+                <option value="coach">Coach</option>
+                <option value="parent">Padre/Madre</option>
+              </select>
+            </label>
+            <label><span>Edad</span><input id="aAge" type="number" min="10" max="60"></label>
+            <label><span>Pais (opcional)</span><input id="aCountry" type="text"></label>
+            <label><span>Ciudad/Estado (opcional)</span><input id="aCity" type="text"></label>
+            <label><span>Peso actual</span><input id="aWeight" type="text" placeholder="ej. 157 lb"></label>
+            <label><span>Escuela (opcional)</span><input id="aSchool" type="text"></label>
+            <label><span>Club (opcional)</span><input id="aClub" type="text"></label>
+            <label><span>Grado escolar / nivel</span><input id="aSchoolGrade" type="text"></label>
+            <label class="span-2"><span>Rutinas de entrenamiento</span><textarea id="aTrainingRoutines" rows="3"></textarea></label>
+            <label><span>Volumen semanal</span><input id="aTrainingVolume" type="text" placeholder="ej. 6 sesiones, 10 horas"></label>
+            <label><span>Tecnica mas trabajada</span><input id="aTrainingFocus" type="text"></label>
+          </div>
+
+          <div class="form-section">
+            <h3>Cuestionario</h3>
+            <div class="grid">
+              <label><span>Movimiento(s) preferido(s)</span><input id="aPreferredMoves" type="text"></label>
+              <label><span>Postura</span>
+                <select id="aStance">
+                  <option value="">Selecciona</option>
+                  <option value="left">Izquierda</option>
+                  <option value="right">Derecha</option>
+                  <option value="switch">Switch</option>
+                </select>
+              </label>
+              <label class="span-2"><span>Notas / metas</span><textarea id="aQuestionnaireNotes" rows="3"></textarea></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Tecnicas por defecto</h3>
+            <div class="grid">
+              <label><span>Pierna de ataque</span>
+                <select id="aLeadLeg"><option value="left">Izquierda</option><option value="right">Derecha</option></select>
+              </label>
+              <label><span>Ataque por izquierda</span><input id="aLeftAttack" type="text"></label>
+              <label><span>Ataque por derecha</span><input id="aRightAttack" type="text"></label>
+              <label><span>Agarres preferidos</span><input id="aPreferredTies" type="text"></label>
+            </div>
+            <label><span>Notas adicionales para el coach</span><textarea id="aMiscNotes" rows="3"></textarea></label>
+          </div>
+
+          <div class="form-section">
+            <h3>Retos actuales</h3>
+            <div class="grid">
+              <label><span>Reto #1</span><input id="aChallengeOne" type="text"></label>
+              <label><span>Reto #2</span><input id="aChallengeTwo" type="text"></label>
+              <label><span>Reto #3</span><input id="aChallengeThree" type="text"></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPETITION -->
+        <div class="profile-subpanel hidden" data-panel="competition">
+          <div class="grid">
+            <label><span>Estilo principal</span>
+              <select id="aStyle">
+                <option value="freestyle">Freestyle</option>
+                <option value="greco-roman">Greco-Roman</option>
+                <option value="folkstyle">Folkstyle</option>
+              </select>
+            </label>
+            <label><span>Categoria de peso</span><input id="aWeightClass" type="text" placeholder="ej. 157"></label>
+            <label><span>Anos de experiencia</span><input id="aYears" type="number" min="0" max="30"></label>
+            <label><span>Nivel de experiencia</span>
+              <select id="aLevel">
+                <option value="beginner">Principiante</option>
+                <option value="intermediate">Intermedio</option>
+                <option value="advanced">Avanzado</option>
+              </select>
+            </label>
+            <label><span>Posicion preferida</span>
+              <select id="aPosition"><option value="neutral">Neutral</option><option value="top">Top</option><option value="bottom">Bottom</option></select>
+            </label>
+            <label><span>Arquetipo</span>
+              <select id="aArchetype">
+                <option value="">Selecciona</option>
+                <option value="technician">Technician</option>
+                <option value="scrambler">Scrambler</option>
+                <option value="pummler">Pummeler</option>
+                <option value="counter-wrestler">Counter-wrestler</option>
+                <option value="chain-wrestler">Chain-wrestler</option>
+              </select>
+            </label>
+            <label><span>Tipo de cuerpo</span>
+              <select id="aBodyType">
+                <option value="">Selecciona</option>
+                <option value="compact">Compacto/Potente</option>
+                <option value="long">Largo/Delgado</option>
+                <option value="balanced">Balanceado/Atletico</option>
+              </select>
+            </label>
+            <label><span>Estrategia de combate</span>
+              <select id="aStrategy">
+                <option value="balanced">Balanceada</option>
+                <option value="offensive">Ofensiva</option>
+                <option value="defensive">Defensiva</option>
+                <option value="counter">Contraataque</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-section">
+            <h3>Estrategia A / B / C</h3>
+            <div class="grid">
+              <label><span>Estrategia A</span><textarea id="aStrategyA" rows="3"></textarea></label>
+              <label><span>Estrategia B</span><textarea id="aStrategyB" rows="3"></textarea></label>
+              <label><span>Estrategia C</span><textarea id="aStrategyC" rows="3"></textarea></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Movimientos seguros vs arriesgados</h3>
+            <div class="grid">
+              <label><span>Movimientos seguros</span><textarea id="aSafeMoves" rows="3"></textarea></label>
+              <label><span>Movimientos arriesgados</span><textarea id="aRiskyMoves" rows="3"></textarea></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Historial de resultados</h3>
+            <label><span>Resultados recientes / notas clave</span><textarea id="aResultsHistory" rows="4"></textarea></label>
+          </div>
+
+          <div class="form-section">
+            <h3>Experiencia internacional</h3>
+            <div class="grid">
+              <label><span>Competencia internacional?</span>
+                <select id="aInternational"><option value="no">No</option><option value="yes">Si</option></select>
+              </label>
+              <label><span>Paises / eventos (opcional)</span><input id="aInternationalEvents" type="text"></label>
+              <label><span>Anos (opcional)</span><input id="aInternationalYears" type="text"></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Notas de competencia</h3>
+            <div class="grid">
+              <label><span>Preferencia de instrucciones del coach</span>
+                <select id="aCoachCues">
+                  <option value="short">Cues cortos</option>
+                  <option value="calm">Tono calmado</option>
+                  <option value="energy">Energia alta</option>
+                  <option value="specific">Instruccion especifica</option>
+                </select>
+              </label>
+              <label><span>Que te ayuda mas? (opcional)</span><input id="aCueNotes" type="text"></label>
+              <label><span>Lesiones o limitaciones (opcional)</span><input id="aInjuryNotes" type="text"></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Etiquetas</h3>
+            <p class="small muted">Separadas por coma. Los coaches pueden filtrar atletas por estas etiquetas.</p>
+            <input id="aTagsText" type="text" placeholder="ej. lefty, scrambler">
+          </div>
+        </div>
+
+        <!-- COACHING QUICK -->
+        <div class="profile-subpanel hidden" data-panel="coaching">
+          <div class="form-section">
+            <h3>Coaching Quick</h3>
+            <p class="small muted">Una hoja rapida para la esquina durante el combate.</p>
+            <div class="grid">
+              <label><span>Posicion favorita en competencia</span>
+                <select id="aFavoritePosition"><option value="neutral">Neutral</option><option value="top">Top</option><option value="bottom">Bottom</option></select>
+              </label>
+              <label><span>Tendencia psicologica</span>
+                <select id="aPsychTendency"><option value="aggressive">Agresiva</option><option value="conservative">Conservadora</option><option value="counterattack">Contraataque</option></select>
+              </label>
+              <label><span>Error comun bajo presion</span><input id="aPressureError" type="text"></label>
+              <label class="span-2"><span>Senal clave del coach</span><textarea id="aCoachSignal" rows="3"></textarea></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Palabras clave</h3>
+            <div class="grid">
+              <label><span>Palabra clave #1</span><input id="aCueWord1" type="text"></label>
+              <label><span>Palabra clave #2</span><input id="aCueWord2" type="text"></label>
+              <label><span>Palabra clave #3</span><input id="aCueWord3" type="text"></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Datos para la esquina</h3>
+            <div class="grid">
+              <label><span>Setup #1</span><input id="aSetup1" type="text"></label>
+              <label><span>Setup #2</span><input id="aSetup2" type="text"></label>
+              <label><span>Setup #3</span><input id="aSetup3" type="text"></label>
+              <label><span>Cue del coach #1</span><input id="aCornerCue1" type="text"></label>
+              <label><span>Cue del coach #2</span><input id="aCornerCue2" type="text"></label>
+              <label><span>Cue del coach #3</span><input id="aCornerCue3" type="text"></label>
+              <label><span>Recordatorio mental #1</span><input id="aMentalReminder1" type="text"></label>
+              <label><span>Recordatorio mental #2</span><input id="aMentalReminder2" type="text"></label>
+              <label><span>Recordatorio mental #3</span><input id="aMentalReminder3" type="text"></label>
+              <label><span>Advertencia de seguridad #1</span><input id="aSafetyWarning1" type="text"></label>
+              <label><span>Advertencia de seguridad #2</span><input id="aSafetyWarning2" type="text"></label>
+              <label><span>Limitacion fisica #1</span><input id="aPhysicalLimitation1" type="text"></label>
+              <label><span>Limitacion fisica #2</span><input id="aPhysicalLimitation2" type="text"></label>
+              <label class="span-2"><span>Llamado de competencia</span><textarea id="aCompetitionCue" rows="3"></textarea></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Top 3 movimientos</h3>
+            <div class="grid-2">
+              <div class="mini-card">
+                <h4>Ofensiva</h4>
+                <label><span>Ofensiva 1</span><input id="aOffense1" type="text"></label>
+                <label><span>Ofensiva 2</span><input id="aOffense2" type="text"></label>
+                <label><span>Ofensiva 3</span><input id="aOffense3" type="text"></label>
+              </div>
+              <div class="mini-card">
+                <h4>Defensa</h4>
+                <label><span>Defensa 1</span><input id="aDefense1" type="text"></label>
+                <label><span>Defensa 2</span><input id="aDefense2" type="text"></label>
+                <label><span>Defensa 3</span><input id="aDefense3" type="text"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row sticky-actions">
+          <button type="submit" class="primary">Guardar perfil</button>
+          <span class="small muted" id="saveStatus"></span>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
