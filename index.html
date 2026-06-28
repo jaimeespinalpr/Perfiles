@@ -135,6 +135,16 @@
       <button type="button" id="signOutBtn" class="ghost">Cerrar sesion</button>
     </header>
 
+    <div id="rosterCard" class="card hidden">
+      <div class="card-header">
+        <h2>Atletas</h2>
+        <div class="chip" id="rosterCount">0</div>
+      </div>
+      <p class="small muted">Perfiles de los atletas registrados (datos en tiempo real desde Firestore).</p>
+      <input id="rosterSearch" type="text" class="roster-search" placeholder="Buscar por nombre o email...">
+      <div id="rosterList"></div>
+    </div>
+
     <div class="card">
       <div class="card-header">
         <h2>Perfil de Atleta</h2>

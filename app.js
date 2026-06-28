@@ -456,6 +456,193 @@
       });
   });
 
+  // ---------- COACH ROSTER ----------
+
+  var rosterCard = document.getElementById("rosterCard");
+  var rosterList = document.getElementById("rosterList");
+  var rosterCount = document.getElementById("rosterCount");
+  var rosterSearchInput = document.getElementById("rosterSearch");
+  var rosterAthletes = [];
+
+  function fieldRow(label, value) {
+    if (value === undefined || value === null || value === "") return null;
+    if (Array.isArray(value)) {
+      value = value.filter(Boolean).join(", ");
+      if (!value) return null;
+    }
+    var row = document.createElement("div");
+    row.className = "roster-field";
+    var labelEl = document.createElement("span");
+    labelEl.className = "roster-field-label";
+    labelEl.textContent = label;
+    var valueEl = document.createElement("span");
+    valueEl.className = "roster-field-value";
+    valueEl.textContent = String(value);
+    row.appendChild(labelEl);
+    row.appendChild(valueEl);
+    return row;
+  }
+
+  function appendFields(container, pairs) {
+    var any = false;
+    pairs.forEach(function (pair) {
+      var row = fieldRow(pair[0], pair[1]);
+      if (row) {
+        container.appendChild(row);
+        any = true;
+      }
+    });
+    return any;
+  }
+
+  function buildRosterGroup(title, pairs) {
+    var group = document.createElement("div");
+    group.className = "roster-group";
+    var heading = document.createElement("h4");
+    heading.textContent = title;
+    group.appendChild(heading);
+    var hasContent = appendFields(group, pairs);
+    return hasContent ? group : null;
+  }
+
+  function buildRosterItem(p) {
+    var item = document.createElement("div");
+    item.className = "roster-item";
+
+    var header = document.createElement("div");
+    header.className = "roster-item-header";
+
+    if (p.photo) {
+      var img = document.createElement("img");
+      img.className = "avatar";
+      img.src = p.photo;
+      img.alt = p.name || p.email || "Atleta";
+      header.appendChild(img);
+    } else {
+      var fallback = document.createElement("div");
+      fallback.className = "avatar";
+      var initials = String(p.name || p.email || "AT").trim().slice(0, 2).toUpperCase();
+      fallback.textContent = initials;
+      header.appendChild(fallback);
+    }
+
+    var info = document.createElement("div");
+    info.className = "roster-item-info";
+    var nameEl = document.createElement("strong");
+    nameEl.textContent = p.name || p.email || "Sin nombre";
+    var summaryEl = document.createElement("span");
+    summaryEl.className = "small muted";
+    var summaryParts = [];
+    if (p.age) summaryParts.push(p.age + " anos");
+    if (p.weightClass || p.weight_class) summaryParts.push((p.weightClass || p.weight_class) + " kg/lb");
+    if (p.clubName) summaryParts.push(p.clubName);
+    summaryEl.textContent = summaryParts.join(" - ") || (p.email || "");
+    info.appendChild(nameEl);
+    info.appendChild(summaryEl);
+    header.appendChild(info);
+
+    var toggleBtn = document.createElement("button");
+    toggleBtn.type = "button";
+    toggleBtn.className = "ghost";
+    toggleBtn.textContent = "Ver mas";
+    header.appendChild(toggleBtn);
+
+    item.appendChild(header);
+
+    var detail = document.createElement("div");
+    detail.className = "roster-detail hidden";
+
+    var trainingGroup = buildRosterGroup("Entrenamiento", [
+      ["Pais", p.country],
+      ["Ciudad/Estado", p.city],
+      ["Escuela", p.schoolName],
+      ["Club", p.clubName],
+      ["Grado escolar", p.schoolGrade],
+      ["Peso actual", p.currentWeight || p.weight],
+      ["Rutinas de entrenamiento", p.trainingRoutines],
+      ["Volumen semanal", p.trainingVolume],
+      ["Tecnica mas trabajada", p.trainingFocus],
+      ["Movimiento(s) preferido(s)", p.preferredMoves || p.preferred_moves],
+      ["Postura", p.stance],
+      ["Notas / metas", p.questionnaireNotes || p.notes],
+      ["Etiquetas", p.tags]
+    ]);
+    if (trainingGroup) detail.appendChild(trainingGroup);
+
+    var competitionGroup = buildRosterGroup("Competencia", [
+      ["Estilo principal", p.style],
+      ["Categoria de peso", p.weightClass || p.weight_class],
+      ["Anos de experiencia", p.years || p.experienceYears || p.experience_years],
+      ["Nivel", p.level],
+      ["Posicion preferida", p.position],
+      ["Arquetipo", p.archetype],
+      ["Tipo de cuerpo", p.bodyType],
+      ["Estrategia", p.strategy],
+      ["Resultados recientes", p.resultsHistory],
+      ["Lesiones o limitaciones", p.injuryNotes]
+    ]);
+    if (competitionGroup) detail.appendChild(competitionGroup);
+
+    var coachingGroup = buildRosterGroup("Coaching Quick", [
+      ["Posicion favorita", p.favoritePosition],
+      ["Tendencia psicologica", p.psychTendency],
+      ["Error comun bajo presion", p.pressureError],
+      ["Senal clave del coach", p.coachSignal],
+      ["Palabras clave", p.cueWords],
+      ["Setups", p.setupsTop3],
+      ["Cues del coach", p.cornerCoachCues],
+      ["Recordatorios mentales", p.mentalReminders],
+      ["Advertencias de seguridad", p.safetyWarnings],
+      ["Limitaciones fisicas", p.physicalLimitations],
+      ["Ofensiva top 3", p.offenseTop3],
+      ["Defensa top 3", p.defenseTop3]
+    ]);
+    if (coachingGroup) detail.appendChild(coachingGroup);
+
+    item.appendChild(detail);
+
+    toggleBtn.addEventListener("click", function () {
+      var nowHidden = detail.classList.toggle("hidden");
+      toggleBtn.textContent = nowHidden ? "Ver mas" : "Ver menos";
+    });
+
+    return item;
+  }
+
+  function renderRoster(filterText) {
+    var query = String(filterText || "").trim().toLowerCase();
+    var filtered = rosterAthletes.filter(function (p) {
+      if (!query) return true;
+      var haystack = ((p.name || "") + " " + (p.email || "")).toLowerCase();
+      return haystack.indexOf(query) !== -1;
+    });
+    filtered.sort(function (a, b) {
+      return String(a.name || a.email || "").localeCompare(String(b.name || b.email || ""));
+    });
+    rosterList.textContent = "";
+    filtered.forEach(function (p) {
+      rosterList.appendChild(buildRosterItem(p));
+    });
+    rosterCount.textContent = String(filtered.length);
+  }
+
+  function loadRoster() {
+    db.collection(USERS_COLLECTION).where("role", "==", "athlete").get()
+      .then(function (snapshot) {
+        rosterAthletes = snapshot.docs.map(function (doc) { return doc.data(); });
+        renderRoster(val("rosterSearch"));
+      })
+      .catch(function (err) {
+        toast("No se pudo cargar la lista de atletas: " + (err.message || err.code), "error");
+      });
+  }
+
+  if (rosterSearchInput) {
+    rosterSearchInput.addEventListener("input", function () {
+      renderRoster(rosterSearchInput.value);
+    });
+  }
+
   // ---------- SESSION ----------
 
   auth.onAuthStateChanged(function (user) {
@@ -481,6 +668,13 @@
           view: "athlete"
         };
         populateAthleteProfileForm(currentProfile);
+        var rawRole = String(currentProfile.role || "").trim().toLowerCase();
+        if (rawRole === "coach" || rawRole === "admin") {
+          rosterCard.classList.remove("hidden");
+          loadRoster();
+        } else {
+          rosterCard.classList.add("hidden");
+        }
       })
       .catch(function (err) {
         toast("No se pudo cargar el perfil: " + (err.message || err.code), "error");

@@ -175,8 +175,43 @@ button { font-family: inherit; cursor: pointer; }
 .toast.error { border-color: var(--danger); }
 .toast.ok { border-color: var(--ok); }
 
+.roster-search {
+  width: 100%;
+  background: #0c1c3c;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 14px;
+}
+.roster-search:focus { outline: none; border-color: var(--gold); }
+
+.roster-item {
+  background: #0c1c3c;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.roster-item-header { display: flex; align-items: center; gap: 12px; }
+.roster-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.roster-detail { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); display: grid; gap: 14px; }
+.roster-detail.hidden { display: none; }
+.roster-group h4 { margin: 0 0 8px; color: var(--gold); font-size: 0.85rem; }
+.roster-field {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 4px 0; font-size: 0.85rem;
+  border-bottom: 1px solid rgba(31,49,96,0.4);
+}
+.roster-field-label { color: var(--muted); }
+.roster-field-value { text-align: right; max-width: 65%; }
+
 @media (max-width: 640px) {
   .grid, .grid-2 { grid-template-columns: 1fr; }
   .card { margin: 12px; padding: 16px; }
   .topbar { padding: 12px 16px; }
+  .roster-field { flex-direction: column; }
+  .roster-field-value { text-align: left; max-width: 100%; }
 }
