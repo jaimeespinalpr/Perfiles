@@ -48,7 +48,7 @@
     if (Array.isArray(value)) {
       return value.map(stripUndefinedDeep).filter(function (item) { return item !== undefined; });
     }
-    if (value && typeof value === "object") {
+    if (value && typeof value === "object" && Object.prototype.toString.call(value) === "[object Object]") {
       var out = {};
       Object.keys(value).forEach(function (key) {
         var cleaned = stripUndefinedDeep(value[key]);
@@ -149,7 +149,7 @@
           view: getDefaultViewForRole(role),
           lang: lang,
           athleteName: role === "parent" ? athleteName : "",
-          linkedAthleteId: role === "parent"
+          linkedAthleteId: (role === "parent" && athleteName)
             ? slugifyKey(athleteName)
             : (role === "athlete" ? slugifyKey(name) : ""),
           linkedAthleteUid: role === "athlete" ? user.uid : "",
@@ -201,6 +201,7 @@
 
   var currentUid = null;
   var currentPhotoUrl = "";
+  var currentProfile = null;
 
   function setPhotoPreview(url) {
     var img = document.getElementById("aPhotoPreview");
@@ -384,7 +385,7 @@
     if (!currentUid) return;
     var statusEl = document.getElementById("saveStatus");
     statusEl.textContent = "Guardando...";
-    var payload = readAthleteProfileForm({});
+    var payload = readAthleteProfileForm(currentProfile);
     payload.user_id = currentUid;
     payload.view = getDefaultViewForRole(payload.role);
     payload.updatedAt = new Date().toISOString();
@@ -427,10 +428,10 @@
             else reject(new Error("image_encode_failed"));
           }, "image/jpeg", 0.85);
         };
-        img.onerror = reject;
+        img.onerror = function () { reject(new Error("image_load_failed")); };
         img.src = reader.result;
       };
-      reader.onerror = reject;
+      reader.onerror = function () { reject(new Error("file_read_failed")); };
       reader.readAsDataURL(file);
     });
   }
@@ -460,6 +461,7 @@
   auth.onAuthStateChanged(function (user) {
     if (!user) {
       currentUid = null;
+      currentProfile = null;
       authScreen.classList.remove("hidden");
       profileScreen.classList.add("hidden");
       loginView.classList.remove("hidden");
@@ -471,14 +473,14 @@
     profileScreen.classList.remove("hidden");
     db.collection(USERS_COLLECTION).doc(user.uid).get()
       .then(function (doc) {
-        var profile = doc.exists ? doc.data() : {
+        currentProfile = doc.exists ? doc.data() : {
           user_id: user.uid,
           email: user.email || "",
           name: user.displayName || "",
           role: "athlete",
           view: "athlete"
         };
-        populateAthleteProfileForm(profile);
+        populateAthleteProfileForm(currentProfile);
       })
       .catch(function (err) {
         toast("No se pudo cargar el perfil: " + (err.message || err.code), "error");
