@@ -279,6 +279,35 @@ button { font-family: inherit; cursor: pointer; }
 .roster-pending-input:focus { outline: none; border-color: var(--accent); }
 .roster-pending-status { margin-left: 4px; }
 
+.lang-switcher {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 60;
+  display: flex;
+  gap: 6px;
+  background: var(--navy-light);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.lang-btn span[aria-hidden] { font-size: 1.1rem; line-height: 1; }
+.lang-btn:hover { border-color: var(--border); color: var(--text); }
+.lang-btn.active { background: var(--accent); color: var(--text); border-color: var(--accent); }
+
 @media (max-width: 640px) {
   .grid, .grid-2 { grid-template-columns: 1fr; }
   .card { margin: 12px; padding: 16px; }
@@ -286,4 +315,7 @@ button { font-family: inherit; cursor: pointer; }
   .roster-field { flex-direction: column; }
   .roster-field-value { text-align: left; max-width: 100%; }
   .roster-pending-label { flex-basis: 100%; }
+  .lang-switcher { top: 8px; left: 8px; padding: 3px; }
+  .lang-btn { padding: 5px 9px; font-size: 0.78rem; }
+  .lang-btn-text { display: none; }
 }

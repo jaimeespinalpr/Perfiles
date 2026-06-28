@@ -1,6 +1,54 @@
 (function () {
   "use strict";
 
+  // ---------- I18N (UI language switcher: English default, Spanish via flag toggle) ----------
+
+  var LANG_STORAGE_KEY = "wpl_ui_lang";
+  var currentLang = "en";
+  try {
+    var storedLang = localStorage.getItem(LANG_STORAGE_KEY);
+    if (storedLang === "es" || storedLang === "en") currentLang = storedLang;
+  } catch (e) {}
+
+  var I18N = window.WPL_I18N;
+
+  function t(key) {
+    var dict = (I18N && I18N[currentLang]) || (I18N && I18N.en) || {};
+    if (dict[key] !== undefined) return dict[key];
+    var fallback = I18N && I18N.en;
+    return (fallback && fallback[key] !== undefined) ? fallback[key] : key;
+  }
+
+  function applyStaticTranslations() {
+    document.documentElement.lang = currentLang;
+    document.title = t("page_title");
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      el.textContent = t(el.getAttribute("data-i18n"));
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
+    });
+    document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
+      el.alt = t(el.getAttribute("data-i18n-alt"));
+    });
+  }
+
+  function setLanguage(lang) {
+    currentLang = lang === "es" ? "es" : "en";
+    try { localStorage.setItem(LANG_STORAGE_KEY, currentLang); } catch (e) {}
+    document.querySelectorAll(".lang-btn").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-lang") === currentLang);
+    });
+    applyStaticTranslations();
+    if (typeof window.WPL_onLanguageChange === "function") window.WPL_onLanguageChange();
+  }
+
+  document.querySelectorAll(".lang-btn").forEach(function (btn) {
+    btn.classList.toggle("active", btn.getAttribute("data-lang") === currentLang);
+    btn.addEventListener("click", function () { setLanguage(btn.getAttribute("data-lang")); });
+  });
+  applyStaticTranslations();
+
   var firebaseApp = firebase.initializeApp(window.FIREBASE_CONFIG);
   var auth = firebase.auth();
   var db = firebase.firestore();
@@ -112,7 +160,7 @@
     var password = val("loginPassword");
     auth.signInWithEmailAndPassword(email, password)
       .catch(function (err) {
-        toast("No se pudo iniciar sesion: " + (err.message || err.code), "error");
+        toast(t("toast_login_failed") + (err.message || err.code), "error");
       });
   });
 
@@ -121,7 +169,7 @@
     var password = val("rPassword");
     var confirm = val("rPasswordConfirm");
     if (password !== confirm) {
-      toast("Las contrasenas no coinciden.", "error");
+      toast(t("toast_passwords_no_match"), "error");
       return;
     }
     var email = val("rEmail").trim().toLowerCase();
@@ -174,10 +222,10 @@
           });
       })
       .then(function () {
-        toast("Cuenta creada. Bienvenido/a.", "ok");
+        toast(t("toast_account_created"), "ok");
       })
       .catch(function (err) {
-        toast("No se pudo crear la cuenta: " + (err.message || err.code), "error");
+        toast(t("toast_account_create_failed") + (err.message || err.code), "error");
       });
   });
 
@@ -318,7 +366,7 @@
 
     setPhotoPreview(p.photo || "");
     document.getElementById("sessionLabel").textContent =
-      (p.name || p.email || "") + " - " + normalizeAuthRole(p.role);
+      (p.name || p.email || "") + " - " + t("opt_" + normalizeAuthRole(p.role));
   }
 
   function readAthleteProfileForm(existing) {
@@ -408,19 +456,19 @@
     e.preventDefault();
     if (!currentUid) return;
     var statusEl = document.getElementById("saveStatus");
-    statusEl.textContent = "Guardando...";
+    statusEl.textContent = t("status_saving");
     var payload = readAthleteProfileForm(currentProfile);
     payload.user_id = currentUid;
     payload.view = getDefaultViewForRole(payload.role);
     payload.updatedAt = new Date().toISOString();
     db.collection(USERS_COLLECTION).doc(currentProfileDocId || currentUid).set(stripUndefinedDeep(payload), { merge: true })
       .then(function () {
-        statusEl.textContent = "Perfil guardado.";
-        toast("Perfil guardado.", "ok");
+        statusEl.textContent = t("status_profile_saved");
+        toast(t("toast_profile_saved"), "ok");
       })
       .catch(function (err) {
         statusEl.textContent = "";
-        toast("No se pudo guardar: " + (err.message || err.code), "error");
+        toast(t("toast_save_failed") + (err.message || err.code), "error");
       });
   });
 
@@ -432,7 +480,7 @@
 
   document.getElementById("aPhotoClearBtn").addEventListener("click", function () {
     setPhotoPreview("");
-    document.getElementById("aPhotoStatus").textContent = "Foto eliminada (guarda el perfil para confirmar).";
+    document.getElementById("aPhotoStatus").textContent = t("photo_status_removed");
   });
 
   function resizeImageToBlob(file, maxSize) {
@@ -464,7 +512,7 @@
     var file = e.target.files && e.target.files[0];
     if (!file || !currentUid) return;
     var statusEl = document.getElementById("aPhotoStatus");
-    statusEl.textContent = "Subiendo foto...";
+    statusEl.textContent = t("photo_status_uploading");
     resizeImageToBlob(file, 512)
       .then(function (blob) {
         var ref = storage.ref().child(MEDIA_ROOT + "/" + currentUid + "/profile-" + Date.now() + ".jpg");
@@ -472,11 +520,11 @@
       })
       .then(function (url) {
         setPhotoPreview(url);
-        statusEl.textContent = "Foto subida. Guarda el perfil para confirmar.";
+        statusEl.textContent = t("photo_status_uploaded");
       })
       .catch(function (err) {
         statusEl.textContent = "";
-        toast("No se pudo subir la foto: " + (err.message || err.code), "error");
+        toast(t("toast_photo_upload_failed") + (err.message || err.code), "error");
       });
   });
 
@@ -496,96 +544,101 @@
   }
 
   function yesNoChoices() {
-    return [{ value: "yes", label: "Yes" }, { value: "no", label: "No" }];
+    return [{ value: "yes", labelKey: "opt_yes" }, { value: "no", labelKey: "opt_no" }];
+  }
+
+  function choiceLabel(choice) {
+    return choice.labelKey ? t(choice.labelKey) : choice.label;
   }
 
   // Single source of truth for "the questionnaire": every field here counts
   // as one question toward an athlete's progress total. Keep this in sync
-  // with the fields editable in the athlete profile form above.
+  // with the fields editable in the athlete profile form above. labelKey is
+  // resolved via t() at render time so it follows the active UI language.
   var QUESTION_DEFS = [
-    { group: "training", label: "Pais", keys: ["country"] },
-    { group: "training", label: "Ciudad/Estado", keys: ["city"] },
-    { group: "training", label: "Escuela", keys: ["schoolName"] },
-    { group: "training", label: "Club", keys: ["clubName"] },
-    { group: "training", label: "Grado escolar", keys: ["schoolGrade"] },
-    { group: "training", label: "Peso actual", keys: ["currentWeight", "weight"] },
-    { group: "training", label: "Rutinas de entrenamiento", keys: ["trainingRoutines"] },
-    { group: "training", label: "Volumen semanal", keys: ["trainingVolume"] },
-    { group: "training", label: "Tecnica mas trabajada", keys: ["trainingFocus"] },
-    { group: "training", label: "Movimiento(s) preferido(s)", keys: ["preferredMoves", "preferred_moves"] },
-    { group: "training", label: "Postura", keys: ["stance"], choices: [
-      { value: "left", label: "Izquierda" },
-      { value: "right", label: "Derecha" },
+    { group: "training", labelKey: "q_country", keys: ["country"] },
+    { group: "training", labelKey: "q_city", keys: ["city"] },
+    { group: "training", labelKey: "q_school", keys: ["schoolName"] },
+    { group: "training", labelKey: "q_club", keys: ["clubName"] },
+    { group: "training", labelKey: "q_school_grade", keys: ["schoolGrade"] },
+    { group: "training", labelKey: "q_current_weight", keys: ["currentWeight", "weight"] },
+    { group: "training", labelKey: "q_training_routines", keys: ["trainingRoutines"] },
+    { group: "training", labelKey: "q_training_volume", keys: ["trainingVolume"] },
+    { group: "training", labelKey: "q_training_focus", keys: ["trainingFocus"] },
+    { group: "training", labelKey: "q_preferred_moves", keys: ["preferredMoves", "preferred_moves"] },
+    { group: "training", labelKey: "q_stance", keys: ["stance"], choices: [
+      { value: "left", labelKey: "opt_left" },
+      { value: "right", labelKey: "opt_right" },
       { value: "switch", label: "Switch" }
     ] },
-    { group: "training", label: "Notas / metas", keys: ["questionnaireNotes", "notes"] },
-    { group: "training", label: "Etiquetas", keys: ["tags"], isList: true },
+    { group: "training", labelKey: "q_notes_goals", keys: ["questionnaireNotes", "notes"] },
+    { group: "training", labelKey: "q_tags", keys: ["tags"], isList: true },
 
-    { group: "competition", label: "Estilo principal", keys: ["style"], choices: [
+    { group: "competition", labelKey: "q_main_style", keys: ["style"], choices: [
       { value: "freestyle", label: "Freestyle" },
       { value: "greco-roman", label: "Greco-Roman" },
       { value: "folkstyle", label: "Folkstyle" }
     ] },
-    { group: "competition", label: "Categoria de peso", keys: ["weightClass", "weight_class"] },
-    { group: "competition", label: "Anos de experiencia", keys: ["years", "experienceYears", "experience_years"] },
-    { group: "competition", label: "Nivel", keys: ["level"], choices: [
-      { value: "beginner", label: "Principiante" },
-      { value: "intermediate", label: "Intermedio" },
-      { value: "advanced", label: "Avanzado" }
+    { group: "competition", labelKey: "q_weight_class", keys: ["weightClass", "weight_class"] },
+    { group: "competition", labelKey: "q_experience_years", keys: ["years", "experienceYears", "experience_years"] },
+    { group: "competition", labelKey: "q_level", keys: ["level"], choices: [
+      { value: "beginner", labelKey: "opt_beginner" },
+      { value: "intermediate", labelKey: "opt_intermediate" },
+      { value: "advanced", labelKey: "opt_advanced" }
     ] },
-    { group: "competition", label: "Posicion preferida", keys: ["position"], choices: [
+    { group: "competition", labelKey: "q_preferred_position", keys: ["position"], choices: [
       { value: "neutral", label: "Neutral" },
       { value: "top", label: "Top" },
       { value: "bottom", label: "Bottom" }
     ] },
-    { group: "competition", label: "Arquetipo", keys: ["archetype"], choices: [
+    { group: "competition", labelKey: "q_archetype", keys: ["archetype"], choices: [
       { value: "technician", label: "Technician" },
       { value: "scrambler", label: "Scrambler" },
       { value: "pummler", label: "Pummeler" },
       { value: "counter-wrestler", label: "Counter-wrestler" },
       { value: "chain-wrestler", label: "Chain-wrestler" }
     ] },
-    { group: "competition", label: "Tipo de cuerpo", keys: ["bodyType"], choices: [
-      { value: "compact", label: "Compacto/Potente" },
-      { value: "long", label: "Largo/Delgado" },
-      { value: "balanced", label: "Balanceado/Atletico" }
+    { group: "competition", labelKey: "q_body_type", keys: ["bodyType"], choices: [
+      { value: "compact", labelKey: "opt_body_compact" },
+      { value: "long", labelKey: "opt_body_long" },
+      { value: "balanced", labelKey: "opt_body_balanced" }
     ] },
-    { group: "competition", label: "Estrategia", keys: ["strategy"], choices: [
-      { value: "balanced", label: "Balanceada" },
-      { value: "offensive", label: "Ofensiva" },
-      { value: "defensive", label: "Defensiva" },
-      { value: "counter", label: "Contraataque" }
+    { group: "competition", labelKey: "q_strategy", keys: ["strategy"], choices: [
+      { value: "balanced", labelKey: "opt_strategy_balanced" },
+      { value: "offensive", labelKey: "opt_strategy_offensive" },
+      { value: "defensive", labelKey: "opt_strategy_defensive" },
+      { value: "counter", labelKey: "opt_strategy_counter" }
     ] },
-    { group: "competition", label: "Resultados recientes", keys: ["resultsHistory"] },
-    { group: "competition", label: "Lesiones o limitaciones", keys: ["injuryNotes"] },
+    { group: "competition", labelKey: "q_results_history", keys: ["resultsHistory"] },
+    { group: "competition", labelKey: "q_injury_notes", keys: ["injuryNotes"] },
 
-    { group: "coaching", label: "Posicion favorita", keys: ["favoritePosition"] },
-    { group: "coaching", label: "Tendencia psicologica", keys: ["psychTendency"] },
-    { group: "coaching", label: "Error comun bajo presion", keys: ["pressureError"] },
-    { group: "coaching", label: "Senal clave del coach", keys: ["coachSignal"] },
-    { group: "coaching", label: "Palabras clave", keys: ["cueWords"], isList: true },
-    { group: "coaching", label: "Setups", keys: ["setupsTop3"], isList: true },
-    { group: "coaching", label: "Cues del coach", keys: ["cornerCoachCues"], isList: true },
-    { group: "coaching", label: "Recordatorios mentales", keys: ["mentalReminders"], isList: true },
-    { group: "coaching", label: "Advertencias de seguridad", keys: ["safetyWarnings"], isList: true },
-    { group: "coaching", label: "Limitaciones fisicas", keys: ["physicalLimitations"], isList: true },
-    { group: "coaching", label: "Ofensiva top 3", keys: ["offenseTop3"], isList: true },
-    { group: "coaching", label: "Defensa top 3", keys: ["defenseTop3"], isList: true },
+    { group: "coaching", labelKey: "q_favorite_position", keys: ["favoritePosition"] },
+    { group: "coaching", labelKey: "q_psych_tendency", keys: ["psychTendency"] },
+    { group: "coaching", labelKey: "q_pressure_error", keys: ["pressureError"] },
+    { group: "coaching", labelKey: "q_coach_signal", keys: ["coachSignal"] },
+    { group: "coaching", labelKey: "q_keywords", keys: ["cueWords"], isList: true },
+    { group: "coaching", labelKey: "q_setups", keys: ["setupsTop3"], isList: true },
+    { group: "coaching", labelKey: "q_coach_cues", keys: ["cornerCoachCues"], isList: true },
+    { group: "coaching", labelKey: "q_mental_reminders", keys: ["mentalReminders"], isList: true },
+    { group: "coaching", labelKey: "q_safety_warnings", keys: ["safetyWarnings"], isList: true },
+    { group: "coaching", labelKey: "q_physical_limitations", keys: ["physicalLimitations"], isList: true },
+    { group: "coaching", labelKey: "q_offense_top3", keys: ["offenseTop3"], isList: true },
+    { group: "coaching", labelKey: "q_defense_top3", keys: ["defenseTop3"], isList: true },
 
-    { group: "camp", label: "Enjoyed the camp?", keys: ["campEnjoyed"], choices: yesNoChoices() },
-    { group: "camp", label: "Overall camp rating", keys: ["campOverallRating"], choices: ratingChoices() },
-    { group: "camp", label: "Improved as a wrestler?", keys: ["campImproved"], choices: yesNoChoices() },
-    { group: "camp", label: "Coaches helpfulness rating", keys: ["campCoachesHelpful"], choices: ratingChoices() },
-    { group: "camp", label: "Overnight stay was good?", keys: ["campOvernightGood"], choices: yesNoChoices() },
-    { group: "camp", label: "Food / sleeping setup rating", keys: ["campFoodSleepRating"], choices: ratingChoices() },
-    { group: "camp", label: "Favorite part of camp", keys: ["campFavoritePart"] },
-    { group: "camp", label: "What would you change?", keys: ["campChangeNote"] },
-    { group: "camp", label: "Would come back?", keys: ["campWouldReturn"], choices: yesNoChoices() },
-    { group: "camp", label: "Would recommend to a teammate?", keys: ["campWouldRecommend"], choices: yesNoChoices() },
-    { group: "camp", label: "Motivation after camp", keys: ["campMotivation"], choices: ratingChoices() }
+    { group: "camp", labelKey: "q_camp_enjoyed", keys: ["campEnjoyed"], choices: yesNoChoices() },
+    { group: "camp", labelKey: "q_camp_overall_rating", keys: ["campOverallRating"], choices: ratingChoices() },
+    { group: "camp", labelKey: "q_camp_improved", keys: ["campImproved"], choices: yesNoChoices() },
+    { group: "camp", labelKey: "q_camp_coaches_helpful", keys: ["campCoachesHelpful"], choices: ratingChoices() },
+    { group: "camp", labelKey: "q_camp_overnight_good", keys: ["campOvernightGood"], choices: yesNoChoices() },
+    { group: "camp", labelKey: "q_camp_food_sleep_rating", keys: ["campFoodSleepRating"], choices: ratingChoices() },
+    { group: "camp", labelKey: "q_camp_favorite_part", keys: ["campFavoritePart"] },
+    { group: "camp", labelKey: "q_camp_change_note", keys: ["campChangeNote"] },
+    { group: "camp", labelKey: "q_camp_would_return", keys: ["campWouldReturn"], choices: yesNoChoices() },
+    { group: "camp", labelKey: "q_camp_would_recommend", keys: ["campWouldRecommend"], choices: yesNoChoices() },
+    { group: "camp", labelKey: "q_camp_motivation", keys: ["campMotivation"], choices: ratingChoices() }
   ];
 
-  var GROUP_TITLES = { training: "Entrenamiento", competition: "Competencia", coaching: "Coaching Quick", camp: "Steller Camp" };
+  var GROUP_TITLE_KEYS = { training: "group_training", competition: "group_competition", coaching: "group_coaching", camp: "group_camp" };
 
   function questionValue(p, def) {
     if (!p) return def.isList ? [] : "";
@@ -638,10 +691,10 @@
     var group = document.createElement("div");
     group.className = "roster-group";
     var heading = document.createElement("h4");
-    heading.textContent = GROUP_TITLES[groupKey];
+    heading.textContent = t(GROUP_TITLE_KEYS[groupKey]);
     group.appendChild(heading);
     defs.forEach(function (def) {
-      var row = fieldRow(def.label, questionDisplayValue(p, def));
+      var row = fieldRow(t(def.labelKey), questionDisplayValue(p, def));
       if (row) group.appendChild(row);
     });
     return group;
@@ -652,7 +705,7 @@
     wrap.className = "roster-progress";
     var label = document.createElement("span");
     label.className = "small muted roster-progress-label";
-    label.textContent = "Preguntas: " + progress.answered + "/" + progress.total + " (" + progress.percent + "%)";
+    label.textContent = t("progress_questions_label") + progress.answered + "/" + progress.total + " (" + progress.percent + "%)";
     var bar = document.createElement("div");
     bar.className = "roster-progress-bar";
     var fill = document.createElement("div");
@@ -671,7 +724,7 @@
     var group = document.createElement("div");
     group.className = "roster-group roster-pending-group";
     var heading = document.createElement("h4");
-    heading.textContent = "Preguntas pendientes (" + pending.length + ")";
+    heading.textContent = t("pending_questions_label") + " (" + pending.length + ")";
     group.appendChild(heading);
 
     var entries = pending.map(function (def) {
@@ -679,26 +732,26 @@
       row.className = "roster-pending-row";
       var label = document.createElement("span");
       label.className = "small muted roster-pending-label";
-      label.textContent = def.label;
+      label.textContent = t(def.labelKey);
       var input;
       if (def.choices) {
         input = document.createElement("select");
         input.className = "roster-pending-input";
         var opt = document.createElement("option");
         opt.value = "";
-        opt.textContent = "Selecciona...";
+        opt.textContent = t("opt_select_ellipsis");
         input.appendChild(opt);
         def.choices.forEach(function (choice) {
           var o = document.createElement("option");
           o.value = choice.value;
-          o.textContent = choice.label;
+          o.textContent = choiceLabel(choice);
           input.appendChild(o);
         });
       } else {
         input = document.createElement("input");
         input.type = "text";
         input.className = "roster-pending-input";
-        input.placeholder = def.isList ? "Separar con comas" : "Escribe la respuesta...";
+        input.placeholder = def.isList ? t("placeholder_comma_separated") : t("placeholder_write_answer");
       }
       row.appendChild(label);
       row.appendChild(input);
@@ -712,10 +765,10 @@
     var saveBtn = document.createElement("button");
     saveBtn.type = "button";
     saveBtn.className = "primary";
-    saveBtn.textContent = "Guardar respuestas";
+    saveBtn.textContent = t("btn_save_answers");
     saveBtn.addEventListener("click", function () {
       if (!p._docId) {
-        statusEl.textContent = "No se pudo identificar el perfil.";
+        statusEl.textContent = t("status_profile_not_found");
         return;
       }
       var updates = {};
@@ -730,22 +783,22 @@
         entry.def.keys.forEach(function (key) { updates[key] = value; });
       });
       if (!any) {
-        statusEl.textContent = "Escribe al menos una respuesta.";
+        statusEl.textContent = t("status_write_one_answer");
         return;
       }
       updates.updatedAt = new Date().toISOString();
       saveBtn.disabled = true;
-      statusEl.textContent = "Guardando...";
+      statusEl.textContent = t("status_saving");
       expandedRosterDocId = p._docId;
       db.collection(USERS_COLLECTION).doc(p._docId).update(updates)
         .then(function () {
-          toast("Respuestas guardadas para " + (p.name || p.email || "el atleta"), "ok");
+          toast(t("toast_answers_saved_for") + (p.name || p.email || t("text_the_athlete")), "ok");
           loadRoster();
         })
         .catch(function (err) {
           saveBtn.disabled = false;
           statusEl.textContent = "";
-          toast("No se pudo guardar: " + (err.message || err.code), "error");
+          toast(t("toast_save_failed") + (err.message || err.code), "error");
         });
     });
 
@@ -769,7 +822,7 @@
       var img = document.createElement("img");
       img.className = "avatar";
       img.src = p.photo;
-      img.alt = p.name || p.email || "Atleta";
+      img.alt = p.name || p.email || t("alt_athlete");
       header.appendChild(img);
     } else {
       var fallback = document.createElement("div");
@@ -782,11 +835,11 @@
     var info = document.createElement("div");
     info.className = "roster-item-info";
     var nameEl = document.createElement("strong");
-    nameEl.textContent = p.name || p.email || "Sin nombre";
+    nameEl.textContent = p.name || p.email || t("text_no_name");
     var summaryEl = document.createElement("span");
     summaryEl.className = "small muted";
     var summaryParts = [];
-    if (p.age) summaryParts.push(p.age + " anos");
+    if (p.age) summaryParts.push(p.age + " " + t("unit_years_old"));
     if (p.weightClass || p.weight_class) summaryParts.push((p.weightClass || p.weight_class) + " kg/lb");
     if (p.clubName) summaryParts.push(p.clubName);
     summaryEl.textContent = summaryParts.join(" - ") || (p.email || "");
@@ -806,7 +859,7 @@
     detail.className = "roster-detail";
     var startExpanded = expandedRosterDocId && p._docId === expandedRosterDocId;
     detail.classList.toggle("hidden", !startExpanded);
-    toggleBtn.textContent = startExpanded ? "Ver menos" : "Ver mas";
+    toggleBtn.textContent = startExpanded ? t("btn_view_less") : t("btn_view_more");
     header.appendChild(toggleBtn);
 
     ["training", "competition", "coaching", "camp"].forEach(function (groupKey) {
@@ -822,7 +875,7 @@
     toggleBtn.addEventListener("click", function () {
       var nowHidden = detail.classList.toggle("hidden");
       expandedRosterDocId = nowHidden ? null : p._docId;
-      toggleBtn.textContent = nowHidden ? "Ver mas" : "Ver menos";
+      toggleBtn.textContent = nowHidden ? t("btn_view_more") : t("btn_view_less");
     });
 
     return item;
@@ -854,7 +907,7 @@
         renderRoster(val("rosterSearch"));
       })
       .catch(function (err) {
-        toast("No se pudo cargar la lista de atletas: " + (err.message || err.code), "error");
+        toast(t("toast_roster_load_failed") + (err.message || err.code), "error");
       });
   }
 
@@ -927,7 +980,13 @@
           });
       })
       .catch(function (err) {
-        toast("No se pudo cargar el perfil: " + (err.message || err.code), "error");
+        toast(t("toast_profile_load_failed") + (err.message || err.code), "error");
       });
   });
+
+  window.WPL_onLanguageChange = function () {
+    if (rosterCard && !rosterCard.classList.contains("hidden")) {
+      renderRoster(val("rosterSearch"));
+    }
+  };
 }());

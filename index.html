@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Perfiles - Wrestling Performance Lab</title>
+  <title>Profiles - Wrestling Performance Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +12,15 @@
 </head>
 <body>
 
+  <div id="langSwitcher" class="lang-switcher">
+    <button type="button" class="lang-btn active" data-lang="en" aria-label="English" title="English">
+      <span aria-hidden="true">🇺🇸</span><span class="lang-btn-text">EN</span>
+    </button>
+    <button type="button" class="lang-btn" data-lang="es" aria-label="Español" title="Español">
+      <span aria-hidden="true">🇵🇷</span><span class="lang-btn-text">ES</span>
+    </button>
+  </div>
+
   <div id="toast" class="toast hidden"></div>
 
   <!-- AUTH SCREEN -->
@@ -20,105 +29,105 @@
       <div class="brand">
         <div class="brand-mark"><img src="logo.png" alt="USA Wrestling Delaware logo"></div>
         <div>
-          <h1>Perfiles</h1>
+          <h1 data-i18n="brand_name">Profiles</h1>
           <p class="brand-subtitle">Delaware Fargo Wrestling Team</p>
-          <p class="small muted">Crea tu cuenta y completa tu perfil de atleta.</p>
+          <p class="small muted" data-i18n="auth_subtitle">Create your account and complete your athlete profile.</p>
         </div>
       </div>
 
       <div id="loginView">
-        <h2>Iniciar sesion</h2>
+        <h2 data-i18n="login_heading">Sign in</h2>
         <form id="loginForm" class="form">
           <label>
-            <span>Email</span>
+            <span data-i18n="field_email">Email</span>
             <input id="loginEmail" type="email" required autocomplete="username">
           </label>
           <label>
-            <span>Contrasena</span>
+            <span data-i18n="field_password">Password</span>
             <input id="loginPassword" type="password" required minlength="8" autocomplete="current-password">
           </label>
-          <button type="submit" class="primary full">Entrar</button>
+          <button type="submit" class="primary full" data-i18n="btn_login">Sign in</button>
         </form>
-        <p class="small muted">Protegido por Firebase Authentication.</p>
-        <button type="button" id="showRegisterBtn" class="ghost full">Crear una cuenta</button>
+        <p class="small muted" data-i18n="auth_protected_by">Protected by Firebase Authentication.</p>
+        <button type="button" id="showRegisterBtn" class="ghost full" data-i18n="btn_show_register">Create an account</button>
       </div>
 
       <div id="registerView" class="hidden">
-        <h2>Crear cuenta</h2>
+        <h2 data-i18n="register_heading">Create account</h2>
         <form id="registerForm" class="form">
           <label>
-            <span>Nombre completo</span>
-            <input id="rName" type="text" required autocomplete="name" placeholder="ej. Jaime Espinal">
+            <span data-i18n="field_full_name">Full name</span>
+            <input id="rName" type="text" required autocomplete="name" data-i18n-placeholder="placeholder_eg_name" placeholder="e.g. Jaime Espinal">
           </label>
           <label>
-            <span>Email</span>
+            <span data-i18n="field_email">Email</span>
             <input id="rEmail" type="email" required autocomplete="email" placeholder="tu@email.com">
           </label>
           <label>
-            <span>Contrasena</span>
+            <span data-i18n="field_password">Password</span>
             <input id="rPassword" type="password" required minlength="8" autocomplete="new-password">
           </label>
           <label>
-            <span>Confirmar contrasena</span>
+            <span data-i18n="field_confirm_password">Confirm password</span>
             <input id="rPasswordConfirm" type="password" required minlength="8" autocomplete="new-password">
           </label>
           <label>
-            <span>Rol</span>
+            <span data-i18n="field_role">Role</span>
             <select id="rRole">
-              <option value="athlete">Atleta</option>
-              <option value="coach">Coach</option>
-              <option value="parent">Padre/Madre</option>
+              <option value="athlete" data-i18n="opt_athlete">Athlete</option>
+              <option value="coach" data-i18n="opt_coach">Coach</option>
+              <option value="parent" data-i18n="opt_parent">Parent</option>
             </select>
           </label>
           <label>
-            <span>Idioma</span>
+            <span data-i18n="field_account_language">Preferred language (notifications)</span>
             <select id="rLang">
-              <option value="es">Espanol</option>
               <option value="en">English</option>
+              <option value="es">Espanol</option>
               <option value="uz">Uzbek</option>
               <option value="ru">Russian</option>
             </select>
           </label>
           <label class="role-extra role-extra-athlete role-extra-coach role-extra-parent">
-            <span>Foto de perfil (opcional, pega una URL)</span>
+            <span data-i18n="field_photo_url">Profile photo (optional, paste a URL)</span>
             <input id="rPhoto" type="text" placeholder="https://...">
           </label>
           <label class="role-extra role-extra-athlete">
-            <span>Movimiento(s) preferido(s)</span>
-            <input id="rPreferredMoves" type="text" placeholder="ej. Single leg">
+            <span data-i18n="field_preferred_moves">Preferred move(s)</span>
+            <input id="rPreferredMoves" type="text" data-i18n-placeholder="placeholder_eg_single_leg" placeholder="e.g. Single leg">
           </label>
           <label class="role-extra role-extra-athlete">
-            <span>Anos de experiencia</span>
+            <span data-i18n="field_experience_years">Years of experience</span>
             <input id="rExperienceYears" type="number" min="0" max="40">
           </label>
           <label class="role-extra role-extra-athlete">
-            <span>Postura</span>
+            <span data-i18n="field_stance">Stance</span>
             <select id="rStance">
-              <option value="">Selecciona</option>
-              <option value="left">Izquierda</option>
-              <option value="right">Derecha</option>
+              <option value="" data-i18n="opt_select">Select</option>
+              <option value="left" data-i18n="opt_left">Left</option>
+              <option value="right" data-i18n="opt_right">Right</option>
               <option value="switch">Switch</option>
             </select>
           </label>
           <label class="role-extra role-extra-athlete">
-            <span>Categoria de peso</span>
-            <input id="rWeightClass" type="text" placeholder="ej. 74 kg">
+            <span data-i18n="field_weight_class">Weight class</span>
+            <input id="rWeightClass" type="text" data-i18n-placeholder="placeholder_eg_74kg" placeholder="e.g. 74 kg">
           </label>
           <label class="role-extra role-extra-parent hidden-role">
-            <span>Nombre del atleta (hijo/a)</span>
-            <input id="rParentAthleteName" type="text" placeholder="ej. Carlos Vega">
+            <span data-i18n="field_parent_athlete_name">Athlete's name (son/daughter)</span>
+            <input id="rParentAthleteName" type="text" data-i18n-placeholder="placeholder_eg_carlos" placeholder="e.g. Carlos Vega">
           </label>
-          <p class="small muted role-extra role-extra-parent hidden-role">
-            El acceso de padre queda pendiente hasta que un coach verifique el vinculo con el atleta.
+          <p class="small muted role-extra role-extra-parent hidden-role" data-i18n="parent_pending_note">
+            Parent access stays pending until a coach verifies the link to the athlete.
           </p>
           <label>
-            <span>Notas</span>
-            <textarea id="rNotes" rows="3" placeholder="Cuentanos tus metas"></textarea>
+            <span data-i18n="field_notes">Notes</span>
+            <textarea id="rNotes" rows="3" data-i18n-placeholder="placeholder_tell_goals" placeholder="Tell us your goals"></textarea>
           </label>
-          <button type="submit" class="primary full">Crear cuenta</button>
-          <p class="small muted">Podras editar toda esta informacion despues, en tu perfil.</p>
+          <button type="submit" class="primary full" data-i18n="btn_create_account">Create account</button>
+          <p class="small muted" data-i18n="register_edit_later_note">You'll be able to edit all of this later, in your profile.</p>
         </form>
-        <button type="button" id="showLoginBtn" class="ghost full">Volver a iniciar sesion</button>
+        <button type="button" id="showLoginBtn" class="ghost full" data-i18n="btn_back_to_login">Back to sign in</button>
       </div>
     </div>
   </main>
@@ -129,113 +138,113 @@
       <div class="brand">
         <div class="brand-mark"><img src="logo.png" alt="USA Wrestling Delaware logo"></div>
         <div>
-          <h1>Perfiles</h1>
+          <h1 data-i18n="brand_name">Profiles</h1>
           <p class="brand-subtitle">Delaware Fargo Wrestling Team</p>
           <p class="small muted" id="sessionLabel"></p>
         </div>
       </div>
-      <button type="button" id="signOutBtn" class="ghost">Cerrar sesion</button>
+      <button type="button" id="signOutBtn" class="ghost" data-i18n="btn_sign_out">Sign out</button>
     </header>
 
     <div id="rosterCard" class="card hidden">
       <div class="card-header">
-        <h2>Atletas</h2>
+        <h2 data-i18n="heading_athletes">Athletes</h2>
         <div class="chip" id="rosterCount">0</div>
       </div>
-      <p class="small muted">Perfiles de los atletas registrados (datos en tiempo real desde Firestore).</p>
-      <input id="rosterSearch" type="text" class="roster-search" placeholder="Buscar por nombre o email...">
+      <p class="small muted" data-i18n="roster_subtitle">Profiles of registered athletes (real-time data from Firestore).</p>
+      <input id="rosterSearch" type="text" class="roster-search" data-i18n-placeholder="placeholder_roster_search" placeholder="Search by name or email...">
       <div id="rosterList"></div>
     </div>
 
     <div class="card">
       <div class="card-header">
-        <h2>Perfil de Atleta</h2>
-        <div class="chip">Crear y Editar</div>
+        <h2 data-i18n="heading_athlete_profile">Athlete Profile</h2>
+        <div class="chip" data-i18n="chip_create_edit">Create and Edit</div>
       </div>
 
       <div class="mini-card profile-photo-callout">
         <div class="profile-photo-callout-header">
           <div>
-            <h3>Foto de perfil</h3>
-            <p class="small muted">Sube una foto desde tu dispositivo. Se usa en toda la app.</p>
+            <h3 data-i18n="heading_profile_photo">Profile photo</h3>
+            <p class="small muted" data-i18n="profile_photo_desc">Upload a photo from your device. It's used throughout the app.</p>
           </div>
-          <img id="aPhotoPreview" class="avatar avatar-lg" alt="Foto de perfil" hidden>
+          <img id="aPhotoPreview" class="avatar avatar-lg" data-i18n-alt="alt_profile_photo" alt="Profile photo" hidden>
           <div id="aPhotoPreviewFallback" class="avatar avatar-lg">AT</div>
         </div>
         <div class="profile-photo-uploader">
           <input id="aPhotoFile" type="file" accept="image/*" class="visually-hidden">
-          <button type="button" id="aPhotoChooseBtn" class="primary">Subir foto</button>
-          <button type="button" id="aPhotoClearBtn" class="ghost">Quitar foto</button>
+          <button type="button" id="aPhotoChooseBtn" class="primary" data-i18n="btn_upload_photo">Upload photo</button>
+          <button type="button" id="aPhotoClearBtn" class="ghost" data-i18n="btn_remove_photo">Remove photo</button>
         </div>
-        <p class="small muted" id="aPhotoStatus">Opcional. Imagen cuadrada recomendada.</p>
+        <p class="small muted" id="aPhotoStatus" data-i18n="photo_status_default">Optional. A square image is recommended.</p>
       </div>
 
       <form id="athleteProfileForm" class="form">
         <div class="profile-subtabs" role="tablist">
-          <button type="button" class="profile-subtab active" data-tab="training">Training</button>
-          <button type="button" class="profile-subtab" data-tab="competition">Competition</button>
-          <button type="button" class="profile-subtab" data-tab="coaching">Coaching Quick</button>
-          <button type="button" class="profile-subtab" data-tab="camp">Steller Camp</button>
+          <button type="button" class="profile-subtab active" data-tab="training" data-i18n="group_training">Training</button>
+          <button type="button" class="profile-subtab" data-tab="competition" data-i18n="group_competition">Competition</button>
+          <button type="button" class="profile-subtab" data-tab="coaching" data-i18n="group_coaching">Coaching Quick</button>
+          <button type="button" class="profile-subtab" data-tab="camp" data-i18n="group_camp">Steller Camp</button>
         </div>
 
         <!-- TRAINING -->
         <div class="profile-subpanel" data-panel="training">
           <div class="grid">
-            <label><span>Nombre completo</span><input id="aName" type="text" required></label>
-            <label><span>Rol</span>
+            <label><span data-i18n="field_full_name">Full name</span><input id="aName" type="text" required></label>
+            <label><span data-i18n="field_role">Role</span>
               <select id="aRole">
-                <option value="athlete">Atleta</option>
-                <option value="coach">Coach</option>
-                <option value="parent">Padre/Madre</option>
+                <option value="athlete" data-i18n="opt_athlete">Athlete</option>
+                <option value="coach" data-i18n="opt_coach">Coach</option>
+                <option value="parent" data-i18n="opt_parent">Parent</option>
               </select>
             </label>
-            <label><span>Edad</span><input id="aAge" type="number" min="10" max="60"></label>
-            <label><span>Pais (opcional)</span><input id="aCountry" type="text"></label>
-            <label><span>Ciudad/Estado (opcional)</span><input id="aCity" type="text"></label>
-            <label><span>Peso actual</span><input id="aWeight" type="text" placeholder="ej. 157 lb"></label>
-            <label><span>Escuela (opcional)</span><input id="aSchool" type="text"></label>
-            <label><span>Club (opcional)</span><input id="aClub" type="text"></label>
-            <label><span>Grado escolar / nivel</span><input id="aSchoolGrade" type="text"></label>
-            <label class="span-2"><span>Rutinas de entrenamiento</span><textarea id="aTrainingRoutines" rows="3"></textarea></label>
-            <label><span>Volumen semanal</span><input id="aTrainingVolume" type="text" placeholder="ej. 6 sesiones, 10 horas"></label>
-            <label><span>Tecnica mas trabajada</span><input id="aTrainingFocus" type="text"></label>
+            <label><span data-i18n="field_age">Age</span><input id="aAge" type="number" min="10" max="60"></label>
+            <label><span data-i18n="field_country">Country (optional)</span><input id="aCountry" type="text"></label>
+            <label><span data-i18n="field_city">City/State (optional)</span><input id="aCity" type="text"></label>
+            <label><span data-i18n="field_current_weight">Current weight</span><input id="aWeight" type="text" data-i18n-placeholder="placeholder_eg_157lb" placeholder="e.g. 157 lb"></label>
+            <label><span data-i18n="field_school">School (optional)</span><input id="aSchool" type="text"></label>
+            <label><span data-i18n="field_club">Club (optional)</span><input id="aClub" type="text"></label>
+            <label><span data-i18n="field_school_grade">School grade / level</span><input id="aSchoolGrade" type="text"></label>
+            <label class="span-2"><span data-i18n="field_training_routines">Training routines</span><textarea id="aTrainingRoutines" rows="3"></textarea></label>
+            <label><span data-i18n="field_training_volume">Weekly volume</span><input id="aTrainingVolume" type="text" data-i18n-placeholder="placeholder_eg_volume" placeholder="e.g. 6 sessions, 10 hours"></label>
+            <label><span data-i18n="field_training_focus">Most-practiced technique</span><input id="aTrainingFocus" type="text"></label>
           </div>
 
           <div class="form-section">
-            <h3>Cuestionario</h3>
+            <h3 data-i18n="heading_questionnaire">Questionnaire</h3>
             <div class="grid">
-              <label><span>Movimiento(s) preferido(s)</span><input id="aPreferredMoves" type="text"></label>
-              <label><span>Postura</span>
+              <label><span data-i18n="field_preferred_moves">Preferred move(s)</span><input id="aPreferredMoves" type="text"></label>
+              <label><span data-i18n="field_stance">Stance</span>
                 <select id="aStance">
-                  <option value="">Selecciona</option>
-                  <option value="left">Izquierda</option>
-                  <option value="right">Derecha</option>
+                  <option value="" data-i18n="opt_select">Select</option>
+                  <option value="left" data-i18n="opt_left">Left</option>
+                  <option value="right" data-i18n="opt_right">Right</option>
                   <option value="switch">Switch</option>
                 </select>
               </label>
-              <label class="span-2"><span>Notas / metas</span><textarea id="aQuestionnaireNotes" rows="3"></textarea></label>
+              <label class="span-2"><span data-i18n="field_notes_goals">Notes / goals</span><textarea id="aQuestionnaireNotes" rows="3"></textarea></label>
             </div>
           </div>
 
           <div class="form-section">
-            <h3>Tecnicas por defecto</h3>
+            <h3 data-i18n="heading_default_techniques">Default techniques</h3>
             <div class="grid">
-              <label><span>Pierna de ataque</span>
-                <select id="aLeadLeg"><option value="left">Izquierda</option><option value="right">Derecha</option></select>
+              <label><span data-i18n="field_lead_leg">Lead leg</span>
+                <select id="aLeadLeg"><option value="left" data-i18n="opt_left">Left</option><option value="right" data-i18n="opt_right">Right</option></select>
               </label>
-              <label><span>Ataque por izquierda</span><input id="aLeftAttack" type="text"></label>
-              <label><span>Ataque por derecha</span><input id="aRightAttack" type="text"></label>
-              <label><span>Agarres preferidos</span><input id="aPreferredTies" type="text"></label>
+              <label><span data-i18n="field_left_attack">Left-side attack</span><input id="aLeftAttack" type="text"></label>
+              <label><span data-i18n="field_right_attack">Right-side attack</span><input id="aRightAttack" type="text"></label>
+              <label><span data-i18n="field_preferred_ties">Preferred ties</span><input id="aPreferredTies" type="text"></label>
             </div>
-            <label><span>Notas adicionales para el coach</span><textarea id="aMiscNotes" rows="3"></textarea></label>
+            <label><span data-i18n="field_misc_notes">Additional notes for the coach</span><textarea id="aMiscNotes" rows="3"></textarea></label>
           </div>
 
           <div class="form-section">
-            <h3>Retos actuales</h3>
+            <h3 data-i18n="heading_current_challenges">Current challenges</h3>
             <div class="grid">
-              <label><span>Reto #1</span><input id="aChallengeOne" type="text"></label>
-              <label><span>Reto #2</span><input id="aChallengeTwo" type="text"></label>
-              <label><span>Reto #3</span><input id="aChallengeThree" type="text"></label>
+              <label><span data-i18n="field_challenge_1">Challenge #1</span><input id="aChallengeOne" type="text"></label>
+              <label><span data-i18n="field_challenge_2">Challenge #2</span><input id="aChallengeTwo" type="text"></label>
+              <label><span data-i18n="field_challenge_3">Challenge #3</span><input id="aChallengeThree" type="text"></label>
             </div>
           </div>
         </div>
@@ -243,28 +252,28 @@
         <!-- COMPETITION -->
         <div class="profile-subpanel hidden" data-panel="competition">
           <div class="grid">
-            <label><span>Estilo principal</span>
+            <label><span data-i18n="field_main_style">Main style</span>
               <select id="aStyle">
                 <option value="freestyle">Freestyle</option>
                 <option value="greco-roman">Greco-Roman</option>
                 <option value="folkstyle">Folkstyle</option>
               </select>
             </label>
-            <label><span>Categoria de peso</span><input id="aWeightClass" type="text" placeholder="ej. 157"></label>
-            <label><span>Anos de experiencia</span><input id="aYears" type="number" min="0" max="30"></label>
-            <label><span>Nivel de experiencia</span>
+            <label><span data-i18n="field_weight_class">Weight class</span><input id="aWeightClass" type="text" data-i18n-placeholder="placeholder_eg_157" placeholder="e.g. 157"></label>
+            <label><span data-i18n="field_experience_years">Years of experience</span><input id="aYears" type="number" min="0" max="30"></label>
+            <label><span data-i18n="field_experience_level">Experience level</span>
               <select id="aLevel">
-                <option value="beginner">Principiante</option>
-                <option value="intermediate">Intermedio</option>
-                <option value="advanced">Avanzado</option>
+                <option value="beginner" data-i18n="opt_beginner">Beginner</option>
+                <option value="intermediate" data-i18n="opt_intermediate">Intermediate</option>
+                <option value="advanced" data-i18n="opt_advanced">Advanced</option>
               </select>
             </label>
-            <label><span>Posicion preferida</span>
+            <label><span data-i18n="field_preferred_position">Preferred position</span>
               <select id="aPosition"><option value="neutral">Neutral</option><option value="top">Top</option><option value="bottom">Bottom</option></select>
             </label>
-            <label><span>Arquetipo</span>
+            <label><span data-i18n="field_archetype">Archetype</span>
               <select id="aArchetype">
-                <option value="">Selecciona</option>
+                <option value="" data-i18n="opt_select">Select</option>
                 <option value="technician">Technician</option>
                 <option value="scrambler">Scrambler</option>
                 <option value="pummler">Pummeler</option>
@@ -272,140 +281,140 @@
                 <option value="chain-wrestler">Chain-wrestler</option>
               </select>
             </label>
-            <label><span>Tipo de cuerpo</span>
+            <label><span data-i18n="field_body_type">Body type</span>
               <select id="aBodyType">
-                <option value="">Selecciona</option>
-                <option value="compact">Compacto/Potente</option>
-                <option value="long">Largo/Delgado</option>
-                <option value="balanced">Balanceado/Atletico</option>
+                <option value="" data-i18n="opt_select">Select</option>
+                <option value="compact" data-i18n="opt_body_compact">Compact/Powerful</option>
+                <option value="long" data-i18n="opt_body_long">Long/Lean</option>
+                <option value="balanced" data-i18n="opt_body_balanced">Balanced/Athletic</option>
               </select>
             </label>
-            <label><span>Estrategia de combate</span>
+            <label><span data-i18n="field_combat_strategy">Combat strategy</span>
               <select id="aStrategy">
-                <option value="balanced">Balanceada</option>
-                <option value="offensive">Ofensiva</option>
-                <option value="defensive">Defensiva</option>
-                <option value="counter">Contraataque</option>
+                <option value="balanced" data-i18n="opt_strategy_balanced">Balanced</option>
+                <option value="offensive" data-i18n="opt_strategy_offensive">Offensive</option>
+                <option value="defensive" data-i18n="opt_strategy_defensive">Defensive</option>
+                <option value="counter" data-i18n="opt_strategy_counter">Counter-attack</option>
               </select>
             </label>
           </div>
 
           <div class="form-section">
-            <h3>Estrategia A / B / C</h3>
+            <h3 data-i18n="heading_strategy_abc">Strategy A / B / C</h3>
             <div class="grid">
-              <label><span>Estrategia A</span><textarea id="aStrategyA" rows="3"></textarea></label>
-              <label><span>Estrategia B</span><textarea id="aStrategyB" rows="3"></textarea></label>
-              <label><span>Estrategia C</span><textarea id="aStrategyC" rows="3"></textarea></label>
+              <label><span data-i18n="field_strategy_a">Strategy A</span><textarea id="aStrategyA" rows="3"></textarea></label>
+              <label><span data-i18n="field_strategy_b">Strategy B</span><textarea id="aStrategyB" rows="3"></textarea></label>
+              <label><span data-i18n="field_strategy_c">Strategy C</span><textarea id="aStrategyC" rows="3"></textarea></label>
             </div>
           </div>
 
           <div class="form-section">
-            <h3>Movimientos seguros vs arriesgados</h3>
+            <h3 data-i18n="heading_safe_risky_moves">Safe vs. risky moves</h3>
             <div class="grid">
-              <label><span>Movimientos seguros</span><textarea id="aSafeMoves" rows="3"></textarea></label>
-              <label><span>Movimientos arriesgados</span><textarea id="aRiskyMoves" rows="3"></textarea></label>
+              <label><span data-i18n="field_safe_moves">Safe moves</span><textarea id="aSafeMoves" rows="3"></textarea></label>
+              <label><span data-i18n="field_risky_moves">Risky moves</span><textarea id="aRiskyMoves" rows="3"></textarea></label>
             </div>
           </div>
 
           <div class="form-section">
-            <h3>Historial de resultados</h3>
-            <label><span>Resultados recientes / notas clave</span><textarea id="aResultsHistory" rows="4"></textarea></label>
+            <h3 data-i18n="heading_results_history">Results history</h3>
+            <label><span data-i18n="field_recent_results">Recent results / key notes</span><textarea id="aResultsHistory" rows="4"></textarea></label>
           </div>
 
           <div class="form-section">
-            <h3>Experiencia internacional</h3>
+            <h3 data-i18n="heading_international_experience">International experience</h3>
             <div class="grid">
-              <label><span>Competencia internacional?</span>
-                <select id="aInternational"><option value="no">No</option><option value="yes">Si</option></select>
+              <label><span data-i18n="field_international_competition">International competition?</span>
+                <select id="aInternational"><option value="no" data-i18n="opt_no">No</option><option value="yes" data-i18n="opt_yes">Yes</option></select>
               </label>
-              <label><span>Paises / eventos (opcional)</span><input id="aInternationalEvents" type="text"></label>
-              <label><span>Anos (opcional)</span><input id="aInternationalYears" type="text"></label>
+              <label><span data-i18n="field_international_events">Countries / events (optional)</span><input id="aInternationalEvents" type="text"></label>
+              <label><span data-i18n="field_international_years">Years (optional)</span><input id="aInternationalYears" type="text"></label>
             </div>
           </div>
 
           <div class="form-section">
-            <h3>Notas de competencia</h3>
+            <h3 data-i18n="heading_competition_notes">Competition notes</h3>
             <div class="grid">
-              <label><span>Preferencia de instrucciones del coach</span>
+              <label><span data-i18n="field_coach_cue_pref">Coach instruction preference</span>
                 <select id="aCoachCues">
-                  <option value="short">Cues cortos</option>
-                  <option value="calm">Tono calmado</option>
-                  <option value="energy">Energia alta</option>
-                  <option value="specific">Instruccion especifica</option>
+                  <option value="short" data-i18n="opt_cue_short">Short cues</option>
+                  <option value="calm" data-i18n="opt_cue_calm">Calm tone</option>
+                  <option value="energy" data-i18n="opt_cue_energy">High energy</option>
+                  <option value="specific" data-i18n="opt_cue_specific">Specific instruction</option>
                 </select>
               </label>
-              <label><span>Que te ayuda mas? (opcional)</span><input id="aCueNotes" type="text"></label>
-              <label><span>Lesiones o limitaciones (opcional)</span><input id="aInjuryNotes" type="text"></label>
+              <label><span data-i18n="field_what_helps">What helps you most? (optional)</span><input id="aCueNotes" type="text"></label>
+              <label><span data-i18n="field_injury_notes">Injuries or limitations (optional)</span><input id="aInjuryNotes" type="text"></label>
             </div>
           </div>
 
           <div class="form-section">
-            <h3>Etiquetas</h3>
-            <p class="small muted">Separadas por coma. Los coaches pueden filtrar atletas por estas etiquetas.</p>
-            <input id="aTagsText" type="text" placeholder="ej. lefty, scrambler">
+            <h3 data-i18n="heading_tags">Tags</h3>
+            <p class="small muted" data-i18n="tags_desc">Comma-separated. Coaches can filter athletes by these tags.</p>
+            <input id="aTagsText" type="text" data-i18n-placeholder="placeholder_eg_tags" placeholder="e.g. lefty, scrambler">
           </div>
         </div>
 
         <!-- COACHING QUICK -->
         <div class="profile-subpanel hidden" data-panel="coaching">
           <div class="form-section">
-            <h3>Coaching Quick</h3>
-            <p class="small muted">Una hoja rapida para la esquina durante el combate.</p>
+            <h3 data-i18n="group_coaching">Coaching Quick</h3>
+            <p class="small muted" data-i18n="coaching_quick_desc">A quick corner sheet for use during the match.</p>
             <div class="grid">
-              <label><span>Posicion favorita en competencia</span>
+              <label><span data-i18n="field_favorite_position">Favorite competition position</span>
                 <select id="aFavoritePosition"><option value="neutral">Neutral</option><option value="top">Top</option><option value="bottom">Bottom</option></select>
               </label>
-              <label><span>Tendencia psicologica</span>
-                <select id="aPsychTendency"><option value="aggressive">Agresiva</option><option value="conservative">Conservadora</option><option value="counterattack">Contraataque</option></select>
+              <label><span data-i18n="field_psych_tendency">Psychological tendency</span>
+                <select id="aPsychTendency"><option value="aggressive" data-i18n="opt_psych_aggressive">Aggressive</option><option value="conservative" data-i18n="opt_psych_conservative">Conservative</option><option value="counterattack" data-i18n="opt_psych_counterattack">Counter-attack</option></select>
               </label>
-              <label><span>Error comun bajo presion</span><input id="aPressureError" type="text"></label>
-              <label class="span-2"><span>Senal clave del coach</span><textarea id="aCoachSignal" rows="3"></textarea></label>
+              <label><span data-i18n="field_pressure_error">Common error under pressure</span><input id="aPressureError" type="text"></label>
+              <label class="span-2"><span data-i18n="field_coach_signal">Coach's key signal</span><textarea id="aCoachSignal" rows="3"></textarea></label>
             </div>
           </div>
 
           <div class="form-section">
-            <h3>Palabras clave</h3>
+            <h3 data-i18n="heading_keywords">Keywords</h3>
             <div class="grid">
-              <label><span>Palabra clave #1</span><input id="aCueWord1" type="text"></label>
-              <label><span>Palabra clave #2</span><input id="aCueWord2" type="text"></label>
-              <label><span>Palabra clave #3</span><input id="aCueWord3" type="text"></label>
+              <label><span data-i18n="field_keyword_1">Keyword #1</span><input id="aCueWord1" type="text"></label>
+              <label><span data-i18n="field_keyword_2">Keyword #2</span><input id="aCueWord2" type="text"></label>
+              <label><span data-i18n="field_keyword_3">Keyword #3</span><input id="aCueWord3" type="text"></label>
             </div>
           </div>
 
           <div class="form-section">
-            <h3>Datos para la esquina</h3>
+            <h3 data-i18n="heading_corner_data">Corner data</h3>
             <div class="grid">
               <label><span>Setup #1</span><input id="aSetup1" type="text"></label>
               <label><span>Setup #2</span><input id="aSetup2" type="text"></label>
               <label><span>Setup #3</span><input id="aSetup3" type="text"></label>
-              <label><span>Cue del coach #1</span><input id="aCornerCue1" type="text"></label>
-              <label><span>Cue del coach #2</span><input id="aCornerCue2" type="text"></label>
-              <label><span>Cue del coach #3</span><input id="aCornerCue3" type="text"></label>
-              <label><span>Recordatorio mental #1</span><input id="aMentalReminder1" type="text"></label>
-              <label><span>Recordatorio mental #2</span><input id="aMentalReminder2" type="text"></label>
-              <label><span>Recordatorio mental #3</span><input id="aMentalReminder3" type="text"></label>
-              <label><span>Advertencia de seguridad #1</span><input id="aSafetyWarning1" type="text"></label>
-              <label><span>Advertencia de seguridad #2</span><input id="aSafetyWarning2" type="text"></label>
-              <label><span>Limitacion fisica #1</span><input id="aPhysicalLimitation1" type="text"></label>
-              <label><span>Limitacion fisica #2</span><input id="aPhysicalLimitation2" type="text"></label>
-              <label class="span-2"><span>Llamado de competencia</span><textarea id="aCompetitionCue" rows="3"></textarea></label>
+              <label><span data-i18n="field_coach_cue_1">Coach cue #1</span><input id="aCornerCue1" type="text"></label>
+              <label><span data-i18n="field_coach_cue_2">Coach cue #2</span><input id="aCornerCue2" type="text"></label>
+              <label><span data-i18n="field_coach_cue_3">Coach cue #3</span><input id="aCornerCue3" type="text"></label>
+              <label><span data-i18n="field_mental_reminder_1">Mental reminder #1</span><input id="aMentalReminder1" type="text"></label>
+              <label><span data-i18n="field_mental_reminder_2">Mental reminder #2</span><input id="aMentalReminder2" type="text"></label>
+              <label><span data-i18n="field_mental_reminder_3">Mental reminder #3</span><input id="aMentalReminder3" type="text"></label>
+              <label><span data-i18n="field_safety_warning_1">Safety warning #1</span><input id="aSafetyWarning1" type="text"></label>
+              <label><span data-i18n="field_safety_warning_2">Safety warning #2</span><input id="aSafetyWarning2" type="text"></label>
+              <label><span data-i18n="field_physical_limitation_1">Physical limitation #1</span><input id="aPhysicalLimitation1" type="text"></label>
+              <label><span data-i18n="field_physical_limitation_2">Physical limitation #2</span><input id="aPhysicalLimitation2" type="text"></label>
+              <label class="span-2"><span data-i18n="field_competition_cue">Competition call</span><textarea id="aCompetitionCue" rows="3"></textarea></label>
             </div>
           </div>
 
           <div class="form-section">
-            <h3>Top 3 movimientos</h3>
+            <h3 data-i18n="heading_top3_moves">Top 3 moves</h3>
             <div class="grid-2">
               <div class="mini-card">
-                <h4>Ofensiva</h4>
-                <label><span>Ofensiva 1</span><input id="aOffense1" type="text"></label>
-                <label><span>Ofensiva 2</span><input id="aOffense2" type="text"></label>
-                <label><span>Ofensiva 3</span><input id="aOffense3" type="text"></label>
+                <h4 data-i18n="heading_offense">Offense</h4>
+                <label><span data-i18n="field_offense_1">Offense 1</span><input id="aOffense1" type="text"></label>
+                <label><span data-i18n="field_offense_2">Offense 2</span><input id="aOffense2" type="text"></label>
+                <label><span data-i18n="field_offense_3">Offense 3</span><input id="aOffense3" type="text"></label>
               </div>
               <div class="mini-card">
-                <h4>Defensa</h4>
-                <label><span>Defensa 1</span><input id="aDefense1" type="text"></label>
-                <label><span>Defensa 2</span><input id="aDefense2" type="text"></label>
-                <label><span>Defensa 3</span><input id="aDefense3" type="text"></label>
+                <h4 data-i18n="heading_defense">Defense</h4>
+                <label><span data-i18n="field_defense_1">Defense 1</span><input id="aDefense1" type="text"></label>
+                <label><span data-i18n="field_defense_2">Defense 2</span><input id="aDefense2" type="text"></label>
+                <label><span data-i18n="field_defense_3">Defense 3</span><input id="aDefense3" type="text"></label>
               </div>
             </div>
           </div>
@@ -414,108 +423,84 @@
         <!-- STELLER CAMP -->
         <div class="profile-subpanel hidden" data-panel="camp">
           <div class="form-section">
-            <h3>Steller Camp</h3>
-            <p class="small muted">Quick feedback after the 3-day wrestling camp. Takes about 2 minutes.</p>
+            <h3 data-i18n="group_camp">Steller Camp</h3>
+            <p class="small muted" data-i18n="camp_subtitle">Quick feedback after the 3-day wrestling camp. Takes about 2 minutes.</p>
             <div class="grid">
-              <label><span>Did you enjoy the 3-day wrestling camp?</span>
+              <label><span data-i18n="camp_q_enjoyed">Did you enjoy the 3-day wrestling camp?</span>
                 <select id="aCampEnjoyed">
-                  <option value="">Select...</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="" data-i18n="opt_select_ellipsis">Select...</option>
+                  <option value="yes" data-i18n="opt_yes">Yes</option>
+                  <option value="no" data-i18n="opt_no">No</option>
                 </select>
               </label>
-              <label><span>Did you feel like you improved as a wrestler during the camp?</span>
+              <label><span data-i18n="camp_q_improved">Did you feel like you improved as a wrestler during the camp?</span>
                 <select id="aCampImproved">
-                  <option value="">Select...</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="" data-i18n="opt_select_ellipsis">Select...</option>
+                  <option value="yes" data-i18n="opt_yes">Yes</option>
+                  <option value="no" data-i18n="opt_no">No</option>
                 </select>
               </label>
-              <label><span>From 1 to 10, how would you rate the camp overall? (1 = Not good, 10 = Perfect)</span>
+              <label><span data-i18n="camp_q_overall_rating">From 1 to 10, how would you rate the camp overall? (1 = Not good, 10 = Perfect)</span>
                 <select id="aCampOverallRating">
-                  <option value="">Select...</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
+                  <option value="" data-i18n="opt_select_ellipsis">Select...</option>
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
                   <option value="10">10</option>
                 </select>
               </label>
-              <label><span>From 1 to 10, how helpful were the coaches? (1 = Not helpful, 10 = Very helpful)</span>
+              <label><span data-i18n="camp_q_coaches_helpful">From 1 to 10, how helpful were the coaches? (1 = Not helpful, 10 = Very helpful)</span>
                 <select id="aCampCoachesHelpful">
-                  <option value="">Select...</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
+                  <option value="" data-i18n="opt_select_ellipsis">Select...</option>
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
                   <option value="10">10</option>
                 </select>
               </label>
-              <label><span>Was staying overnight at the camp a good experience for you?</span>
+              <label><span data-i18n="camp_q_overnight_good">Was staying overnight at the camp a good experience for you?</span>
                 <select id="aCampOvernightGood">
-                  <option value="">Select...</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="" data-i18n="opt_select_ellipsis">Select...</option>
+                  <option value="yes" data-i18n="opt_yes">Yes</option>
+                  <option value="no" data-i18n="opt_no">No</option>
                 </select>
               </label>
-              <label><span>From 1 to 10, how was the food / sleeping setup? (1 = Not good, 10 = Perfect)</span>
+              <label><span data-i18n="camp_q_food_sleep_rating">From 1 to 10, how was the food / sleeping setup? (1 = Not good, 10 = Perfect)</span>
                 <select id="aCampFoodSleepRating">
-                  <option value="">Select...</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
+                  <option value="" data-i18n="opt_select_ellipsis">Select...</option>
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
                   <option value="10">10</option>
                 </select>
               </label>
-              <label><span>Would you come back to this camp again?</span>
+              <label><span data-i18n="camp_q_would_return">Would you come back to this camp again?</span>
                 <select id="aCampWouldReturn">
-                  <option value="">Select...</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="" data-i18n="opt_select_ellipsis">Select...</option>
+                  <option value="yes" data-i18n="opt_yes">Yes</option>
+                  <option value="no" data-i18n="opt_no">No</option>
                 </select>
               </label>
-              <label><span>Would you recommend this camp to another wrestler?</span>
+              <label><span data-i18n="camp_q_would_recommend">Would you recommend this camp to another wrestler?</span>
                 <select id="aCampWouldRecommend">
-                  <option value="">Select...</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="" data-i18n="opt_select_ellipsis">Select...</option>
+                  <option value="yes" data-i18n="opt_yes">Yes</option>
+                  <option value="no" data-i18n="opt_no">No</option>
                 </select>
               </label>
-              <label class="span-2"><span>What was your favorite part of the camp?</span><textarea id="aCampFavoritePart" rows="3"></textarea></label>
-              <label class="span-2"><span>What is one thing you did not like, or would change for next time?</span><textarea id="aCampChangeNote" rows="3"></textarea></label>
+              <label class="span-2"><span data-i18n="camp_q_favorite_part">What was your favorite part of the camp?</span><textarea id="aCampFavoritePart" rows="3"></textarea></label>
+              <label class="span-2"><span data-i18n="camp_q_change_note">What is one thing you did not like, or would change for next time?</span><textarea id="aCampChangeNote" rows="3"></textarea></label>
             </div>
           </div>
 
           <div class="mini-card">
-            <h4>One last thing</h4>
-            <label><span>From 1 to 10, how motivated do you feel after this camp? (1 = Not motivated, 10 = Very motivated)</span>
+            <h4 data-i18n="camp_last_thing_heading">One last thing</h4>
+            <label><span data-i18n="camp_q_motivation">From 1 to 10, how motivated do you feel after this camp? (1 = Not motivated, 10 = Very motivated)</span>
               <select id="aCampMotivation">
-                <option value="">Select...</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
+                <option value="" data-i18n="opt_select_ellipsis">Select...</option>
+                <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                <option value="7">7</option><option value="8">8</option><option value="9">9</option>
                 <option value="10">10</option>
               </select>
             </label>
@@ -523,7 +508,7 @@
         </div>
 
         <div class="row sticky-actions">
-          <button type="submit" class="primary">Guardar perfil</button>
+          <button type="submit" class="primary" data-i18n="btn_save_profile">Save profile</button>
           <span class="small muted" id="saveStatus"></span>
         </div>
       </form>
@@ -535,6 +520,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
   <script src="firebase-config.js"></script>
+  <script src="i18n.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
